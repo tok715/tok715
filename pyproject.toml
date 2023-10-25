@@ -30,6 +30,7 @@ matplotlib = ">=3.3.4"
 [tool.poetry.scripts]
 tok715-voicerecog = 'tok715.voicerecog.cli:main'
 tok715-vectorstor = 'tok715.vectorstor.cli:main'
+tok715-ai-service = 'tok715.ai_service.cli:main'
 
 [build-system]
 requires = ["poetry-core"]

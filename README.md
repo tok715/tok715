@@ -29,6 +29,8 @@
 * 存储到 `MySQL`
 * 向量化并存储到 `Milvus`
 
+### 2.2 `tok715-ai-service`: AI 服务模块
+
 ## 3. Redis PUB/SUB 主题
 
 **自然语言输入**
@@ -75,6 +77,15 @@ aliyun:
     app_key: xxxxx
     access_key_id: xxxxx
     access_key_secret: xxxxx
+
+# AI 服务配置
+# 使用模块: ai-service (server 字段)
+# 使用模块: vectorstor
+ai_service:
+  address: 127.0.0.1:9891
+  server:
+    host: '127.0.0.1'
+    port: 9891
 ```
 
 ## 5. 许可证
