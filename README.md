@@ -2,14 +2,14 @@
 
 开发代号: TOK715
 
-## 依赖
+## 1. 依赖
 
 * `ffmpeg`, 使用 `ffmpeg` 捕捉麦克风数据流
 * `poetry`, 使用 `poetry` 管理 Python 依赖
 
-## 组件
+## 2. 模块
 
-### `tok715-voicerecog`: 语音识别模块
+### 2.1 `tok715-voicerecog` 语音识别模块
 
 **功能**
 
@@ -21,9 +21,15 @@
 
 阿里云识别服务要求编码格式为 `pcm_s16le`，采样率为 `16000`，单声道。
 
-### `tok715-vectorstor`: 存储和预处理模块
+### 2.2 `tok715-vectorstor`: 存储和预处理模块
 
-## Redis PUB/SUB 主题
+**功能**
+
+* 监听 `redis` `自然语言输入` 主题
+* 存储到 `MySQL`
+* 向量化并存储到 `Milvus`
+
+## 3. Redis PUB/SUB 主题
 
 **自然语言输入**
 
@@ -41,7 +47,7 @@
 }
 ```
 
-## 配置文件
+## 4. 配置文件
 
 ```yaml
 # tok715.yml
@@ -71,6 +77,6 @@ aliyun:
     access_key_secret: xxxxx
 ```
 
-## 许可证
+## 5. 许可证
 
 TOK715 Developers, MIT License
