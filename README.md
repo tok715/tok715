@@ -27,9 +27,14 @@
 
 * 监听 `redis` `自然语言输入` 主题
 * 存储到 `MySQL`
-* 向量化并存储到 `Milvus`
+* 向量化 (调用 `ai-service`) 并存储到 `Milvus`
 
 ### 2.2 `tok715-ai-service`: AI 服务模块
+
+**功能**
+
+* 监听 HTTP 端口
+* 提供 `向量化` 和 `推理` 服务
 
 ## 3. Redis PUB/SUB 主题
 
@@ -80,12 +85,15 @@ aliyun:
 
 # AI 服务配置
 # 使用模块: ai-service (server 字段)
-# 使用模块: vectorstor
+# 使用模块: vectorstor (address 字段)
 ai_service:
   address: 127.0.0.1:9891
+
   server:
     host: '127.0.0.1'
     port: 9891
+
+    model: 'CausalLM/14B'
 ```
 
 ## 5. 许可证
