@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tok715"
-version = "0.0.1"
+version = "0.0.2"
 description = "CODENAME: TOK715"
 authors = ["GUO YANKE <hi@guoyk.xyz>"]
 license = "MIT"
@@ -28,8 +28,8 @@ aliyun-python-sdk-core = ">=2.13.3"
 matplotlib = ">=3.3.4"
 
 [tool.poetry.scripts]
-tok715_voicerecog = 'tok715.voicerecog.cli:main'
-tok715_vectorstor = 'tok715.vectorstor.cli:main'
+tok715-voicerecog = 'tok715.voicerecog.cli:main'
+tok715-vectorstor = 'tok715.vectorstor.cli:main'
 
 [build-system]
 requires = ["poetry-core"]

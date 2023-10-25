@@ -9,7 +9,7 @@
 
 ## 组件
 
-### `tok715_voicerecog` 语音识别模块
+### `tok715-voicerecog`: 语音识别模块
 
 **功能**
 
@@ -21,7 +21,7 @@
 
 阿里云识别服务要求编码格式为 `pcm_s16le`，采样率为 `16000`，单声道。
 
-### `tok715_vectorstor`
+### `tok715-vectorstor`: 存储和预处理模块
 
 ## Redis PUB/SUB 主题
 
