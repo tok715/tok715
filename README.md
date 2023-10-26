@@ -155,8 +155,9 @@ ai_service:
     host: '127.0.0.1'
     port: 9891
 
-    model: 'CausalLM/14B'
-    embedding: 'intfloat/multilingual-e5-large'
+    models:
+      generation: 'CausalLM/14B'
+      embeddings: 'intfloat/multilingual-e5-large'
 ```
 
 ## 6. 许可证
