@@ -7,41 +7,39 @@
 title: 系统构架
 ---
 flowchart TB
-    node_mic(麦克风)
+    node_mic(用户: 麦克风)
+    node_speaker(用户: 扬声器)
+    node_voicerecog_main("模块: tok715-voicerecog")
+    node_speechloud_main("模块: tok715-speechloud")
+    node_vectorstor_main("模块: tok715-vectorstor")
+    node_ai_service_main("模块: tok715-ai-service")
+    node_mindignite_main("模块: tok715-mindignite")
+    node_danmucolle_main("模块: tok715-danmucolle")
+    node_aliyun_nls(阿里云: 语音识别服务)
+    node_aliyun_tts(阿里云: 语音合成服务)
+    node_bilibili_stream(哔哩哔哩: 直播间)
+    node_redis_queue_input(Redis 队列: 用户输入)
+    node_redis_queue_output(Redis 队列: 模型输出)
 
-    subgraph 阿里云
-        direction TB
-        node_aliyun_nls(语音识别服务)
+    subgraph MySQL
+        node_mysql_messages(表: messages)
     end
-
-    subgraph TOK715
-        direction TB
-        node_voicerecog_main("语音识别模块
-        voicerecog")
-        node_vectorstor_main("存储处理模块
-        vectorstor")
-        node_ai_service_main("AI 服务模块
-        ai-service")
-    end
-
-    subgraph 基础服务
-        direction TB
-        subgraph Redis
-            node_redis_queue(队列: 用户输入)
-        end
-        subgraph MySQL
-            node_mysql_messages(表: messages)
-        end
-        subgraph Milvus
-            node_milvus_messages(表: messages)
-        end
+    subgraph Milvus
+        node_milvus_messages(表: messages)
     end
 
     node_mic --> node_voicerecog_main <--> node_aliyun_nls
-    node_voicerecog_main --> node_redis_queue
-    node_redis_queue --> node_vectorstor_main --> node_mysql_messages
+    node_voicerecog_main --> node_redis_queue_input
+    node_redis_queue_input --> node_vectorstor_main -- 原始数据 --> node_mysql_messages
     node_vectorstor_main <-- 向量化 --> node_ai_service_main
-    node_vectorstor_main --> node_milvus_messages
+    node_vectorstor_main -- 向量数据 --> node_milvus_messages
+    node_milvus_messages -- 向量数据 --> node_mindignite_main
+    node_mysql_messages -- 原始数据 --> node_mindignite_main
+    node_mindignite_main <-- 推理 --> node_ai_service_main
+    node_mindignite_main --> node_redis_queue_output --> node_speechloud_main
+    node_speechloud_main <--> node_aliyun_tts
+    node_speechloud_main --> node_speaker
+    node_bilibili_stream --> node_danmucolle_main --> node_redis_queue_input
 ```
 
 ## 1. 依赖
@@ -52,7 +50,7 @@ flowchart TB
 
 ## 2. 模块
 
-### 2.1 `tok715-voicerecog` 语音识别模块
+### 2.1 语音识别模块: `voicerecog`
 
 **功能**
 
@@ -64,7 +62,15 @@ flowchart TB
 
 阿里云语音识别服务要求编码格式为 `pcm_s16le, 16khz, mono`
 
-### 2.2 `tok715-vectorstor`: 存储处理模块
+### 2.2 AI 服务模块: `ai-service`
+
+**功能**
+
+* 监听 HTTP 端口
+* 提供 `向量化` 服务
+* 提供 `推理` 服务
+
+### 2.3 存储处理模块: `vectorstor`
 
 **功能**
 
@@ -72,12 +78,11 @@ flowchart TB
 * 存储到 `MySQL`
 * 向量化 (调用 `ai-service`) 并存储到 `Milvus`
 
-### 2.2 `tok715-ai-service`: AI 服务模块
+### 2.4 思维触发模块: `mindignite`
 
-**功能**
+### 2.5 语音合成模块: `speechloud`
 
-* 监听 HTTP 端口
-* 提供 `向量化` 和 `推理` 服务
+### 2.6 弹幕收集模块: `danmucolle`
 
 ## 3. Redis PUB/SUB 主题
 
