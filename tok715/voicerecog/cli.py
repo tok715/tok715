@@ -3,10 +3,10 @@ import subprocess
 import time
 
 import click
-import redis
 import yaml
 
 from tok715.constants import *
+from tok715.database.client import create_redis
 from tok715.vendor import nls
 
 
@@ -59,10 +59,7 @@ def main(opt_conf: str, opt_device: str):
     print(f"using microphone device: {opt_device}")
 
     # create redis client
-    redis_cfg = {"decode_responses": True}
-    redis_cfg.update(conf["redis"])
-
-    redis_client = redis.Redis(**redis_cfg)
+    redis_client = create_redis(conf)
 
     # retrieve aliyun_nls_token
     nls_conf = conf['aliyun']['nls']
@@ -80,14 +77,14 @@ def main(opt_conf: str, opt_device: str):
         print(f"aliyun_nls_token found")
 
     def on_sentence_end(s: str, *args):
-        text, index = decode_aliyun_nls_data(s)
-        if not text or not index:
+        content, index = decode_aliyun_nls_data(s)
+        if not content or not index:
             return
-        print(f"on_sentence_end: {text}")
+        print(f"on_sentence_end: {content}")
 
         result = json.dumps({
             "ts": int(round(time.time() * 1000)),
-            "text": text,
+            "content": content,
             "user": user_conf,
         })
 

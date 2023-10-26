@@ -45,10 +45,10 @@
 ```json
 {
   "ts": 1698240603702,
-  "text": "坐在驶进乡间小路的摇晃公交车里，他回想起了过去唯一次和祖母交谈。",
+  "content": "坐在驶进乡间小路的摇晃公交车里，他回想起了过去唯一次和祖母交谈。",
   "user": {
     "id": "owner",
-    "name": "主人",
+    "display_name": "主人",
     "group": "owner"
   }
 }
@@ -63,8 +63,8 @@
 # 使用模块：voicerecog
 user:
   id: owner
+  display_name: 主人
   group: owner
-  name: 主人
 
 # redis 配置
 # 更多参数，翻阅 https://redis-py.readthedocs.io/en/stable/connections.html
@@ -72,6 +72,11 @@ user:
 redis:
   host: '127.0.0.1'
   port: 6379
+
+# 数据库配置
+# 使用模块: vectorstor
+database:
+  url: 'mysql+pymysql://root:root@localhost:3306/tok715'
 
 # 阿里云 服务配置
 # 使用模块: voicerecog
