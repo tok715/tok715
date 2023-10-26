@@ -7,21 +7,21 @@
 title: 系统构架
 ---
 flowchart TB
-    node_mic(用户麦克风)
+    node_mic(麦克风)
 
-    subgraph 阿里云服务
+    subgraph 阿里云
         direction TB
         node_aliyun_nls(语音识别服务)
     end
 
     subgraph TOK715
         direction TB
-        node_voicerecog_main("`_语音识别模块_
-    **tok715-voicerecog**`")
-        node_vectorstor_main("`_存储处理模块_
-    **tok715-vectorstor**`")
-        node_ai_service_main("`_AI 服务模块_
-    **tok715-ai-service**`")
+        node_voicerecog_main("语音识别模块
+        voicerecog")
+        node_vectorstor_main("存储处理模块
+        vectorstor")
+        node_ai_service_main("AI 服务模块
+        ai-service")
     end
 
     subgraph 基础服务
