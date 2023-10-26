@@ -2,10 +2,9 @@
 
 开发代号: TOK715
 
+## 1. 系统构架
+
 ```mermaid
----
-title: 系统构架
----
 flowchart TB
     node_mic(用户: 麦克风)
     node_speaker(用户: 扬声器)
@@ -42,15 +41,16 @@ flowchart TB
     node_bilibili_stream --> node_danmucolle_main --> node_redis_queue_input
 ```
 
-## 1. 依赖
+## 2. 依赖
 
-* `NVIDIA CUDA`, 使用 GPU 加速
-* `ffmpeg`, 捕捉麦克风数据流
-* `poetry`, 管理 Python 依赖
+* 最新最好的英伟达显卡
+* **python > 3.10**
+* **ffmpeg**, 用来捕捉麦克风数据流
+* **poetry**, 用来管理 python 依赖
 
-## 2. 模块
+## 3. 模块
 
-### 2.1 语音识别模块: `voicerecog`
+### 3.1 语音识别模块: `voicerecog`
 
 **功能**
 
@@ -62,7 +62,7 @@ flowchart TB
 
 阿里云语音识别服务要求编码格式为 `pcm_s16le, 16khz, mono`
 
-### 2.2 AI 服务模块: `ai-service`
+### 3.2 AI 服务模块: `ai-service`
 
 **功能**
 
@@ -70,7 +70,7 @@ flowchart TB
 * 提供 `向量化` 服务
 * 提供 `推理` 服务
 
-### 2.3 存储处理模块: `vectorstor`
+### 3.3 存储处理模块: `vectorstor`
 
 **功能**
 
@@ -78,13 +78,13 @@ flowchart TB
 * 存储到 `MySQL`
 * 向量化 (调用 `ai-service`) 并存储到 `Milvus`
 
-### 2.4 思维触发模块: `mindignite`
+### 3.4 思维触发模块: `mindignite`
 
-### 2.5 语音合成模块: `speechloud`
+### 3.5 语音合成模块: `speechloud`
 
-### 2.6 弹幕收集模块: `danmucolle`
+### 3.6 弹幕收集模块: `danmucolle`
 
-## 3. Redis PUB/SUB 主题
+## 4. Redis PUB/SUB 队列
 
 **自然语言输入**
 
@@ -102,7 +102,7 @@ flowchart TB
 }
 ```
 
-## 4. 配置文件
+## 5. 配置文件
 
 ```yaml
 # tok715.yml
@@ -149,6 +149,6 @@ ai_service:
     model: 'CausalLM/14B'
 ```
 
-## 5. 许可证
+## 6. 许可证
 
 TOK715 Developers, MIT License
