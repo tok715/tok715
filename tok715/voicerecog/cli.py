@@ -139,9 +139,10 @@ def main(opt_conf: str, opt_device: str):
         "pipe:1",
     ], stdout=subprocess.PIPE, universal_newlines=False) as p:
         while True:
-            data = p.stdout.read(1024)
+            data = p.stdout.read(512)
             if data:
                 st.send_audio(data)
+            time.sleep(0.001)
 
 
 if __name__ == "__main__":
