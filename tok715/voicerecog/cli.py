@@ -146,16 +146,6 @@ def main(opt_conf: str, opt_device: str):
             if data:
                 st.send_audio(data)
 
-    print(">>>>> ffmpeg started")
-
-    while True:
-        try:
-            data, _ = p.communicate(timeout=10)
-            print(f"ffmpeg read {len(data)} bytes")
-            st.send_audio(data)
-        except subprocess.TimeoutExpired:
-            pass
-
 
 if __name__ == "__main__":
     main()
