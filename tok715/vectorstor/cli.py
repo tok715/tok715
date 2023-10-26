@@ -19,14 +19,17 @@ def main(opt_conf, opt_init_db):
     with open(opt_conf, "r") as f:
         conf = yaml.safe_load(f)
 
+    # create sqlalchemy engine
     engine = create_engine(conf['database']['url'])
 
+    # initialize database
     if opt_init_db:
         from tok715.database.model import Base
         engine.echo = True
         Base.metadata.create_all(engine)
         return
 
+    # handle incoming message
     def handle_message_input(data: Dict):
         with Session(engine) as session:
             msg = Message(
@@ -44,6 +47,7 @@ def main(opt_conf, opt_init_db):
             session.commit()
             print(f"message {msg.id} saved")
 
+    # create redis client
     redis_client = create_redis(conf)
 
     # start redis subscribe
