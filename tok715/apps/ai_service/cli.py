@@ -3,7 +3,24 @@ import json
 
 import click
 
+from tok715.ai.model import load_generation_model_tokenizer, load_embeddings_model_tokenizer
 from tok715.misc.config import load_config
+
+
+class JSONHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+
+    def read_json(self):
+        content_length = int(self.headers["Content-Length"])
+        body = self.rfile.read(content_length)
+        return json.loads(body)
+
+    def send_json(self, data, code=200):
+        body = json.dumps(data).encode("utf-8")
+        self.send_response(code)
+        self.send_header("Content-type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
 
 @click.command()
@@ -13,19 +30,15 @@ def main(opt_conf):
 
     server_conf = conf["ai_service"]["server"]
 
-    class AIServiceHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
-        def read_json(self):
-            content_length = int(self.headers["Content-Length"])
-            body = self.rfile.read(content_length)
-            return json.loads(body)
+    print("loading embeddings model")
+    e_model, e_tokenizer = load_embeddings_model_tokenizer()
 
-        def send_json(self, data, code=200):
-            body = json.dumps(data).encode("utf-8")
-            self.send_response(code)
-            self.send_header("Content-type", "application/json")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
+    print("loading generation model")
+    g_model, g_tokenizer = load_generation_model_tokenizer()
+
+    print("all models loaded")
+
+    class AIServiceHTTPRequestHandler(JSONHTTPRequestHandler):
 
         def do_GET(self):
             self.send_json({"hello": "world"})
@@ -37,7 +50,8 @@ def main(opt_conf):
             except Exception as e:
                 self.send_json({"error": str(e)}, code=500)
 
-    s = http.server.HTTPServer((server_conf['host'], server_conf['port']), AIServiceHTTPRequestHandler)
+    s = http.server.HTTPServer(
+        (server_conf['host'], server_conf['port']), AIServiceHTTPRequestHandler)
     s.serve_forever()
 
 
