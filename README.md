@@ -2,10 +2,53 @@
 
 开发代号: TOK715
 
+```mermaid
+---
+title: 系统构架
+---
+flowchart TB
+    node_mic(用户麦克风)
+
+    subgraph 阿里云服务
+        direction TB
+        node_aliyun_nls(语音识别服务)
+    end
+
+    subgraph TOK715
+        direction TB
+        node_voicerecog_main("`_语音识别模块_
+    **tok715-voicerecog**`")
+        node_vectorstor_main("`_存储处理模块_
+    **tok715-vectorstor**`")
+        node_ai_service_main("`_AI 服务模块_
+    **tok715-ai-service**`")
+    end
+
+    subgraph 基础服务
+        direction TB
+        subgraph Redis
+            node_redis_queue(队列: 用户输入)
+        end
+        subgraph MySQL
+            node_mysql_messages(表: messages)
+        end
+        subgraph Milvus
+            node_milvus_messages(表: messages)
+        end
+    end
+
+    node_mic --> node_voicerecog_main <--> node_aliyun_nls
+    node_voicerecog_main --> node_redis_queue
+    node_redis_queue --> node_vectorstor_main --> node_mysql_messages
+    node_vectorstor_main <-- 向量化 --> node_ai_service_main
+    node_vectorstor_main --> node_milvus_messages
+```
+
 ## 1. 依赖
 
-* `ffmpeg`, 使用 `ffmpeg` 捕捉麦克风数据流
-* `poetry`, 使用 `poetry` 管理 Python 依赖
+* `NVIDIA CUDA`, 使用 GPU 加速
+* `ffmpeg`, 捕捉麦克风数据流
+* `poetry`, 管理 Python 依赖
 
 ## 2. 模块
 
@@ -19,9 +62,9 @@
 
 **编码格式**
 
-阿里云识别服务要求编码格式为 `pcm_s16le`，采样率为 `16000`，单声道。
+阿里云语音识别服务要求编码格式为 `pcm_s16le, 16khz, mono`
 
-### 2.2 `tok715-vectorstor`: 存储和预处理模块
+### 2.2 `tok715-vectorstor`: 存储处理模块
 
 **功能**
 

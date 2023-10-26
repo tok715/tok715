@@ -29,9 +29,9 @@ huggingface-hub = "^0.17"
 transformers = "^4.34.1"
 
 [tool.poetry.scripts]
-tok715-voicerecog = 'tok715.voicerecog.cli:main'
-tok715-vectorstor = 'tok715.vectorstor.cli:main'
-tok715-ai-service = 'tok715.ai_service.cli:main'
+tok715-voicerecog = 'tok715.apps.voicerecog.cli:main'
+tok715-vectorstor = 'tok715.apps.vectorstor.cli:main'
+tok715-ai-service = 'tok715.apps.ai_service.cli:main'
 
 [build-system]
 requires = ["poetry-core"]
