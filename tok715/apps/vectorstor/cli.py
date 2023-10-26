@@ -3,31 +3,40 @@ import time
 from typing import Dict
 
 import click
-import yaml
-from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from tok715.constants import KEY_NL_INPUT_ASTERISK
-from tok715.database.client import create_redis
+from tok715.database.collection import collection_messages_build, collection_messages
 from tok715.database.model import Message
+from tok715.misc.client import create_redis_client, create_database_client, connect_milvus
+from tok715.misc.config import load_config
 
 
 @click.command()
 @click.option("--conf", "-c", "opt_conf", default="tok715.yml", help="config file")
 @click.option("--init-db", "-i", "opt_init_db", is_flag=True, help="initialize database")
 def main(opt_conf, opt_init_db):
-    with open(opt_conf, "r") as f:
-        conf = yaml.safe_load(f)
+    conf = load_config(opt_conf)
 
     # create sqlalchemy engine
-    engine = create_engine(conf['database']['url'])
+    engine = create_database_client(conf)
+
+    # connect to milvus
+    connect_milvus(conf)
 
     # initialize database
     if opt_init_db:
+        # sqlalchemy engine
         from tok715.database.model import Base
         engine.echo = True
         Base.metadata.create_all(engine)
+
+        # milvus
+        collection_messages_build()
         return
+
+    # milvus collection for messages
+    collection = collection_messages()
 
     # handle incoming message
     def handle_message_input(data: Dict):
@@ -48,7 +57,7 @@ def main(opt_conf, opt_init_db):
             print(f"message {msg.id} saved")
 
     # create redis client
-    redis_client = create_redis(conf)
+    redis_client = create_redis_client(conf)
 
     # start redis subscribe
     ps = redis_client.pubsub()

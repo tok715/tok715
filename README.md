@@ -125,6 +125,15 @@ redis:
 # 使用模块: vectorstor
 database:
   url: 'mysql+pymysql://root:root@localhost:3306/tok715'
+  # 更多参数，翻阅 https://docs.sqlalchemy.org/en/20/core/engines.html
+  echo: true
+
+# milvus 配置
+# 使用模块: vectorstor
+milvus:
+  alias: "default"
+  host: 'localhost'
+  port: '19530'
 
 # 阿里云 服务配置
 # 使用模块: voicerecog

@@ -3,10 +3,10 @@ import subprocess
 import time
 
 import click
-import yaml
 
 from tok715.constants import *
-from tok715.database.client import create_redis
+from tok715.misc.client import create_redis_client
+from tok715.misc.config import load_config
 from tok715.vendor import nls
 
 
@@ -24,8 +24,7 @@ def decode_aliyun_nls_data(s: str) -> (str, int):
 @click.option("--conf", "-c", "opt_conf", default="tok715.yml", help="config file")
 @click.option("--device", "-d", "opt_device", default="", help="microphone device id")
 def main(opt_conf: str, opt_device: str):
-    with open(opt_conf, "r") as f:
-        conf = yaml.safe_load(f)
+    conf = load_config(opt_conf)
 
     # sub conf
     user_conf = {
@@ -59,7 +58,7 @@ def main(opt_conf: str, opt_device: str):
     print(f"using microphone device: {opt_device}")
 
     # create redis client
-    redis_client = create_redis(conf)
+    redis_client = create_redis_client(conf)
 
     # retrieve aliyun_nls_token
     nls_conf = conf['aliyun']['nls']

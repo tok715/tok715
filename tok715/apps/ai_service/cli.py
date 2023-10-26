@@ -2,14 +2,14 @@ import http.server
 import json
 
 import click
-import yaml
+
+from tok715.misc.config import load_config
 
 
 @click.command()
 @click.option("--conf", "-c", "opt_conf", default="tok715.yml", help="config file")
 def main(opt_conf):
-    with open(opt_conf, "r") as f:
-        conf = yaml.safe_load(f)
+    conf = load_config(opt_conf)
 
     server_conf = conf["ai_service"]["server"]
 
@@ -32,6 +32,7 @@ def main(opt_conf):
 
         def do_POST(self):
             try:
+                # TODO: handle incoming message
                 self.send_json(self.read_json())
             except Exception as e:
                 self.send_json({"error": str(e)}, code=500)
