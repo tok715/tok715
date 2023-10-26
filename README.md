@@ -156,6 +156,7 @@ ai_service:
     port: 9891
 
     model: 'CausalLM/14B'
+    embedding: 'intfloat/multilingual-e5-large'
 ```
 
 ## 6. 许可证
