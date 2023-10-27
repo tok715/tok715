@@ -5,7 +5,8 @@ from typing import Dict
 import click
 
 from tok715.ai.embeddings import ai_embeddings_create
-from tok715.ai.model import load_embeddings_sentence_transformer
+from tok715.ai.generation import chat
+from tok715.ai.model import load_embeddings_sentence_transformer, load_generation_model_tokenizer
 from tok715.misc.config import load_config
 
 
@@ -30,10 +31,9 @@ class JSONInvokeHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         try:
             data: Dict = self.read_json()
-            data.update({
+            self.send_json({
                 'result': self.do_invoke(data['method'], data['args'])
             })
-            self.send_json(data)
         except Exception as e:
             self.send_json({"error": str(e)}, code=500)
 
@@ -52,7 +52,7 @@ def main(opt_conf):
     e_transformer = load_embeddings_sentence_transformer()
 
     print("loading generation model")
-    # g_model, g_tokenizer = load_generation_model_tokenizer()
+    g_model, g_tokenizer = load_generation_model_tokenizer()
 
     print("all models loaded")
 
@@ -62,6 +62,19 @@ def main(opt_conf):
             if method == "embeddings":
                 return {
                     "vectors": ai_embeddings_create(e_transformer, args["input_texts"]),
+                }
+            if method == 'generation':
+                response, history = chat(
+                    g_model,
+                    g_tokenizer,
+                    query=args["query"],
+                    history=args["history"],
+                    system=args["system"],
+                    append_history=True,
+                )
+                return {
+                    "response": response,
+                    "history": history,
                 }
             return {}
 
