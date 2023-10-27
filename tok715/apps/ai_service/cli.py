@@ -4,7 +4,7 @@ from typing import Dict
 
 import click
 
-from tok715.ai.embeddings import ai_embeddings_create
+from tok715.ai.embeddings import EmbeddingsExecutor
 from tok715.ai.generation import GenerationExecutor
 from tok715.ai.model import load_embeddings_sentence_transformer, load_generation_model_tokenizer
 from tok715.misc.config import load_config
@@ -50,11 +50,11 @@ def main(opt_conf):
 
     print("loading embeddings sentence transformer")
     e_transformer = load_embeddings_sentence_transformer()
+    e_executor = EmbeddingsExecutor(e_transformer)
 
     print("loading generation model")
     g_model, g_tokenizer = load_generation_model_tokenizer()
-
-    g = GenerationExecutor(g_model, g_tokenizer)
+    g_executor = GenerationExecutor(g_model, g_tokenizer)
 
     print("all models loaded")
 
@@ -63,14 +63,14 @@ def main(opt_conf):
         def do_invoke(self, method: str, args: Dict) -> Dict:
             if method == "embeddings":
                 return {
-                    "vectors": ai_embeddings_create(e_transformer, args["input_texts"]),
+                    "vectors": e_executor.vectorize(args["input_texts"]),
                 }
             if method == 'generation':
                 existing = []
                 for item in args['context']:
                     existing.append((item['role'], item['text']))
                 return {
-                    "response": g.generate(existing),
+                    "response": g_executor.generate(existing),
                 }
             return {}
 
