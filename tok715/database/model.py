@@ -31,4 +31,8 @@ class Message(Base):
 
 
 def message_should_vectorize(msg: Message) -> bool:
-    return len(msg.content) > 10
+    # return len(msg.content) > 10
+    return True
+
+def message_save_content(msg: Message) -> None:
+    pass

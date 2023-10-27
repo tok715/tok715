@@ -40,3 +40,9 @@ def invoke_ai_service_embeddings(conf: Dict, input_texts: List[str]) -> List[Lis
     args = {'input_texts': input_texts}
     result = invoke_ai_service(conf, 'embeddings', args)
     return result['vectors']
+
+
+def invoke_ai_service_generation(conf: Dict, context: List[Dict]) -> str:
+    args = {'context': context}
+    result = invoke_ai_service(conf, 'generation', args)
+    return result['response']
