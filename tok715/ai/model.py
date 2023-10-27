@@ -1,23 +1,16 @@
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig, AutoModel
+from sentence_transformers import SentenceTransformer
+from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig
 
 from tok715.constants import MODEL_GENERATION, MODEL_EMBEDDINGS
 
 
-def load_embeddings_model_tokenizer():
-    tokenizer = AutoTokenizer.from_pretrained(
+def load_embeddings_sentence_transformer() -> SentenceTransformer:
+    return SentenceTransformer(
         MODEL_EMBEDDINGS,
-        trust_remote_code=True,
-        local_files_only=True,
+        device='cuda',
+        cache_folder='_cache',
     )
-    model = AutoModel.from_pretrained(
-        MODEL_EMBEDDINGS,
-        device_map="auto",
-        torch_dtype=torch.bfloat16,
-        trust_remote_code=True,
-        local_files_only=True,
-    ).eval()
-    return model, tokenizer
 
 
 def load_generation_model_tokenizer():

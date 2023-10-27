@@ -1,13 +1,15 @@
 import http.server
 import json
+from typing import Dict
 
 import click
 
-from tok715.ai.model import load_generation_model_tokenizer, load_embeddings_model_tokenizer
+from tok715.ai.embeddings import ai_embeddings_create
+from tok715.ai.model import load_embeddings_sentence_transformer
 from tok715.misc.config import load_config
 
 
-class JSONHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+class JSONInvokeHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def read_json(self):
         content_length = int(self.headers["Content-Length"])
@@ -22,6 +24,22 @@ class JSONHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def do_GET(self):
+        self.send_json({"hello": "world"})
+
+    def do_POST(self):
+        try:
+            data: Dict = self.read_json()
+            data.update({
+                'result': self.do_invoke(data['method'], data['args'])
+            })
+            self.send_json(data)
+        except Exception as e:
+            self.send_json({"error": str(e)}, code=500)
+
+    def do_invoke(self, method: str, args: Dict) -> Dict:
+        return {}
+
 
 @click.command()
 @click.option("--conf", "-c", "opt_conf", default="tok715.yml", help="config file")
@@ -30,28 +48,28 @@ def main(opt_conf):
 
     server_conf = conf["ai_service"]["server"]
 
-    print("loading embeddings model")
-    e_model, e_tokenizer = load_embeddings_model_tokenizer()
+    print("loading embeddings sentence transformer")
+    e_transformer = load_embeddings_sentence_transformer()
 
     print("loading generation model")
-    g_model, g_tokenizer = load_generation_model_tokenizer()
+    # g_model, g_tokenizer = load_generation_model_tokenizer()
 
     print("all models loaded")
 
-    class AIServiceHTTPRequestHandler(JSONHTTPRequestHandler):
+    class AIServiceHTTPRequestHandler(JSONInvokeHTTPRequestHandler):
 
-        def do_GET(self):
-            self.send_json({"hello": "world"})
-
-        def do_POST(self):
-            try:
-                # TODO: handle incoming message
-                self.send_json(self.read_json())
-            except Exception as e:
-                self.send_json({"error": str(e)}, code=500)
+        def do_invoke(self, method: str, args: Dict) -> Dict:
+            if method == "embeddings":
+                return {
+                    "vectors": ai_embeddings_create(e_transformer, args["input_texts"]),
+                    "vector_version": server_conf["vector_version"]
+                }
+            return {}
 
     s = http.server.HTTPServer(
-        (server_conf['host'], server_conf['port']), AIServiceHTTPRequestHandler)
+        (server_conf['host'], server_conf['port']),
+        AIServiceHTTPRequestHandler,
+    )
     s.serve_forever()
 
 

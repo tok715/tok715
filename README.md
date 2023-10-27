@@ -67,8 +67,49 @@ flowchart TB
 **功能**
 
 * 监听 HTTP 端口
-* 提供 `向量化` 服务
-* 提供 `推理` 服务
+* 提供 `向量计算` 接口
+* 提供 `推理` 接口
+
+**接口调用方法**
+
+```
+POST /invoke
+```
+
+**接口定义: 向量计算**
+
+请求:
+
+```json
+{
+  "method": "embeddings",
+  "args": {
+    "input_texts": [
+      "早上好中国我有草履虫",
+      "早上好中国我有冰淇淋"
+    ]
+  }
+}
+```
+
+返回:
+
+```json
+{
+  "result": {
+    "vectors": [
+      [],
+      []
+    ],
+    "vector_version": 3
+  }
+}
+```
+
+返回:
+
+```json
+```
 
 ### 3.3 存储处理模块: `vectorstor`
 
@@ -154,6 +195,8 @@ ai_service:
   server:
     host: '127.0.0.1'
     port: 9891
+    # 当前 embeddings 版本，会与数据库中保存的 vector_version 比对
+    vector_version: 3
 ```
 
 ## 6. 许可证
