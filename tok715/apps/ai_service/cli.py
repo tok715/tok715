@@ -5,7 +5,7 @@ from typing import Dict
 import click
 
 from tok715.ai.embeddings import ai_embeddings_create
-from tok715.ai.generation import chat
+from tok715.ai.generation import GenerationExecutor
 from tok715.ai.model import load_embeddings_sentence_transformer, load_generation_model_tokenizer
 from tok715.misc.config import load_config
 
@@ -54,6 +54,8 @@ def main(opt_conf):
     print("loading generation model")
     g_model, g_tokenizer = load_generation_model_tokenizer()
 
+    g = GenerationExecutor(g_model, g_tokenizer)
+
     print("all models loaded")
 
     class AIServiceHTTPRequestHandler(JSONInvokeHTTPRequestHandler):
@@ -64,17 +66,11 @@ def main(opt_conf):
                     "vectors": ai_embeddings_create(e_transformer, args["input_texts"]),
                 }
             if method == 'generation':
-                response, history = chat(
-                    g_model,
-                    g_tokenizer,
-                    query=args["query"],
-                    history=args["history"],
-                    system=args["system"],
-                    append_history=True,
-                )
+                existing = []
+                for item in args['context']:
+                    existing.append((item['role'], item['text']))
                 return {
-                    "response": response,
-                    "history": history,
+                    "response": g.generate(existing),
                 }
             return {}
 

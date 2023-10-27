@@ -99,6 +99,38 @@ POST /invoke
 }
 ```
 
+**接口定义: 生成**
+
+请求:
+
+```json
+{
+  "method": "generation",
+  "args": {
+    "context": [
+      {
+        "role": "system",
+        "text": "你是一个小可爱"
+      },
+      {
+        "role": "user",
+        "text": "介你自己绍一下"
+      }
+    ]
+  }
+}
+```
+
+返回:
+
+```json
+{
+  "result": {
+    "response": "我是小可爱"
+  }
+}
+```
+
 ### 3.3 存储处理模块: `catchqueue`
 
 ### 3.4 向量维护模块: `vectorhero`
