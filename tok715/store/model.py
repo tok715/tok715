@@ -1,6 +1,8 @@
 from sqlalchemy import String, Text, BigInteger, Integer
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
+from tok715.constants import USER_ID_TOK715
+
 
 class Base(DeclarativeBase):
     pass
@@ -29,10 +31,8 @@ class Message(Base):
     # vector version
     vector_version: Mapped[int] = mapped_column(Integer(), name="vector_version", nullable=False, index=True, default=0)
 
+    def should_vectorize(self) -> bool:
+        return len(self.content) > 5
 
-def message_should_vectorize(msg: Message) -> bool:
-    # return len(msg.content) > 10
-    return True
-
-def message_save_content(msg: Message) -> None:
-    pass
+    def chatml_role(self) -> str:
+        return 'assistant' if self.user_id == USER_ID_TOK715 else 'user'

@@ -2,10 +2,16 @@ from typing import List
 
 from sentence_transformers import SentenceTransformer
 
+from .constants import MODEL_EMBEDDINGS
+
 
 class EmbeddingsExecutor:
-    def __init__(self, st: SentenceTransformer):
-        self.st = st
+    def __init__(self):
+        self.st = SentenceTransformer(
+            MODEL_EMBEDDINGS,
+            device='cuda',
+            cache_folder='_cache',
+        )
 
     def vectorize(self, input_texts: List[str]) -> List[List[float]]:
         output = self.st.encode([

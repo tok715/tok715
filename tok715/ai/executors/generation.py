@@ -1,7 +1,9 @@
 from typing import List, Tuple
 
 import torch
-from transformers import PreTrainedTokenizer
+from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig
+
+from .constants import MODEL_GENERATION
 
 HistoryType = List[Tuple[str, str]]
 TokensType = List[int]
@@ -14,7 +16,27 @@ role_assistant = "assistant"
 
 
 class GenerationExecutor:
-    def __init__(self, model: any, tokenizer: PreTrainedTokenizer):
+    def __init__(self):
+        tokenizer = AutoTokenizer.from_pretrained(
+            MODEL_GENERATION,
+            trust_remote_code=True,
+            local_files_only=True,
+        )
+
+        model = AutoModelForCausalLM.from_pretrained(
+            MODEL_GENERATION,
+            device_map="auto",
+            torch_dtype=torch.bfloat16,
+            trust_remote_code=True,
+            local_files_only=True,
+        ).eval()
+        model.generation_config = GenerationConfig.from_pretrained(
+            MODEL_GENERATION,
+            trust_remote_code=True,
+            local_files_only=True,
+        )
+        model.generation_config.do_sample = False  # use greedy decoding
+
         self.model = model
         self.tokenizer = tokenizer
         # common tokens

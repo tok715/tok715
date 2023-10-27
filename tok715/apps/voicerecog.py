@@ -5,8 +5,7 @@ import time
 import click
 
 from tok715.constants import *
-from tok715.misc.client import create_redis_client
-from tok715.misc.config import load_config
+from tok715.misc import create_redis_client, load_config
 from tok715.vendor import nls
 
 

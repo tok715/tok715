@@ -25,7 +25,7 @@ flowchart TB
     node_mic --> node_voicerecog_main <--> node_aliyun_nls
     node_voicerecog_main --> node_redis_queue_input
     node_redis_queue_input --> node_catchqueue_main -- 原始数据 --> node_mysql_messages
-    node_catchqueue_main <--向量化--> node_ai_service_main
+    node_catchqueue_main <-- 向量化 --> node_ai_service_main
     node_catchqueue_main -- 向量数据 --> node_milvus_messages
     node_mysql_messages -- 原始数据 --> node_vectorhero_main
     node_vectorhero_main <-- 向量化 --> node_ai_service_main
@@ -110,11 +110,11 @@ POST /invoke
     "context": [
       {
         "role": "system",
-        "text": "你是一个小可爱"
+        "content": "你是一个小可爱"
       },
       {
         "role": "user",
-        "text": "介你自己绍一下"
+        "content": "介你自己绍一下"
       }
     ]
   }

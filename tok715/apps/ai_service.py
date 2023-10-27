@@ -4,10 +4,8 @@ from typing import Dict
 
 import click
 
-from tok715.ai.embeddings import EmbeddingsExecutor
-from tok715.ai.generation import GenerationExecutor
-from tok715.ai.model import load_embeddings_sentence_transformer, load_generation_model_tokenizer
-from tok715.misc.config import load_config
+from tok715.ai.executors import EmbeddingsExecutor, GenerationExecutor
+from tok715.misc import load_config
 
 
 class JSONInvokeHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -48,15 +46,13 @@ def main(opt_conf):
 
     server_conf = conf["ai_service"]["server"]
 
-    print("loading embeddings sentence transformer")
-    e_transformer = load_embeddings_sentence_transformer()
-    e_executor = EmbeddingsExecutor(e_transformer)
+    print("loading embeddings executor")
+    e_executor = EmbeddingsExecutor()
 
-    print("loading generation model")
-    g_model, g_tokenizer = load_generation_model_tokenizer()
-    g_executor = GenerationExecutor(g_model, g_tokenizer)
+    print("loading generation executor")
+    g_executor = GenerationExecutor()
 
-    print("all models loaded")
+    print("all executors loaded")
 
     class AIServiceHTTPRequestHandler(JSONInvokeHTTPRequestHandler):
 
@@ -68,7 +64,7 @@ def main(opt_conf):
             if method == 'generation':
                 existing = []
                 for item in args['context']:
-                    existing.append((item['role'], item['text']))
+                    existing.append((item['role'], item['content']))
                 return {
                     "response": g_executor.generate(existing),
                 }
