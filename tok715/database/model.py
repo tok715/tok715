@@ -21,7 +21,14 @@ class Message(Base):
     # unix timestamp in milliseconds
     ts: Mapped[int] = mapped_column(BigInteger(), name="ts", nullable=False, index=True)
 
-    # <0: ignored for vectorization
-    # =0: not vectorized
-    # >0: vectorized version
+    # 0: not processed
+    # 1: processed
+    # -1: ignored
     vector_status: Mapped[int] = mapped_column(Integer(), name="vector_status", nullable=False, index=True, default=0)
+
+    # vector version
+    vector_version: Mapped[int] = mapped_column(Integer(), name="vector_version", nullable=False, index=True, default=0)
+
+
+def message_should_vectorize(msg: Message) -> bool:
+    return len(msg.content) > 10

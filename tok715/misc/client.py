@@ -1,7 +1,8 @@
-from typing import Dict
+from typing import Dict, List
 
 import pymilvus
 import redis
+import requests
 import sqlalchemy
 from sqlalchemy import create_engine
 
@@ -24,3 +25,18 @@ def connect_milvus(conf: Dict) -> None:
     if 'milvus' in conf:
         kwargs.update(conf['milvus'])
     pymilvus.connections.connect(**kwargs)
+
+
+def invoke_ai_service(conf: Dict, method: str, args: Dict) -> Dict:
+    url = conf['ai_service']['url']
+    r = requests.post(url, json={'method': method, 'args': args})
+    if r.status_code != 200:
+        raise Exception('failed invoking ai_service: ' + r.text)
+    data = r.json()
+    return data['result']
+
+
+def invoke_ai_service_embeddings(conf: Dict, input_texts: List[str]) -> List[List[float]]:
+    args = {'input_texts': input_texts}
+    result = invoke_ai_service(conf, 'embeddings', args)
+    return result['vectors']

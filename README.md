@@ -25,6 +25,8 @@ flowchart TB
     node_mic --> node_voicerecog_main <--> node_aliyun_nls
     node_voicerecog_main --> node_redis_queue_input
     node_redis_queue_input --> node_catchqueue_main -- 原始数据 --> node_mysql_messages
+    node_catchqueue_main <--向量化--> node_ai_service_main
+    node_catchqueue_main -- 向量数据 --> node_milvus_messages
     node_mysql_messages -- 原始数据 --> node_vectorhero_main
     node_vectorhero_main <-- 向量化 --> node_ai_service_main
     node_vectorhero_main -- 向量数据 --> node_milvus_messages
@@ -99,7 +101,7 @@ POST /invoke
 
 ### 3.3 存储处理模块: `catchqueue`
 
-### 3.4 向量处理模块: `vectorhero`
+### 3.4 向量维护模块: `vectorhero`
 
 ### 3.5 思维触发模块: `mindignite`
 
@@ -169,10 +171,10 @@ aliyun:
     access_key_secret: xxxxx
 
 # AI 服务配置
-# 使用模块: ai-service (server 字段)
-# 使用模块: catchqueue (address 字段)
+# 客户端使用 url 字段调用
+# 服务端使用 server 字段配置
 ai_service:
-  address: 127.0.0.1:9891
+  url: http://127.0.0.1:9891/invoke
 
   server:
     host: '127.0.0.1'

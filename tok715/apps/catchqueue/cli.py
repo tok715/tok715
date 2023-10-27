@@ -5,9 +5,11 @@ from typing import Dict
 import click
 from sqlalchemy.orm import Session
 
-from tok715.constants import KEY_NL_INPUT_ASTERISK
-from tok715.database.model import Message
-from tok715.misc.client import create_redis_client, create_database_client
+from tok715.constants import KEY_NL_INPUT_ASTERISK, VECTOR_VERSION
+from tok715.database.collection import collection_messages, collection_messages_upsert
+from tok715.database.model import Message, message_should_vectorize
+from tok715.database.util import initialize_database
+from tok715.misc.client import create_redis_client, create_database_client, connect_milvus, invoke_ai_service_embeddings
 from tok715.misc.config import load_config
 
 
@@ -20,13 +22,15 @@ def main(opt_conf, opt_init_db):
     # create sqlalchemy engine
     engine = create_database_client(conf)
 
+    # connect to milvus
+    connect_milvus(conf)
+
     # initialize database
     if opt_init_db:
-        # sqlalchemy engine
-        from tok715.database.model import Base
-        engine.echo = True
-        Base.metadata.create_all(engine)
+        initialize_database(engine)
         return
+
+    collection = collection_messages()
 
     # handle incoming message
     def handle_message_input(data: Dict):
@@ -37,10 +41,27 @@ def main(opt_conf, opt_init_db):
                 user_display_name=data['user']['display_name'],
                 content=data['content'],
                 ts=data['ts'],
-                vector_status=0,
+                vector_version=VECTOR_VERSION,
             )
-            session.add(msg)
-            session.commit()
+
+            if message_should_vectorize(msg):
+                # first stage commit
+                msg.vector_status = 0
+                session.add(msg)
+                session.commit()
+
+                # calculate vector
+                vectors = invoke_ai_service_embeddings(conf, [msg.content])
+                collection_messages_upsert(collection, [msg], vectors)
+
+                # second stage commit
+                msg.vector_status = 1
+                session.commit()
+            else:
+                msg.vector_status = -1
+                session.add(msg)
+                session.commit()
+
             print(f"message {msg.id} saved")
 
     # create redis client
@@ -53,7 +74,10 @@ def main(opt_conf, opt_init_db):
     while True:
         message = ps.get_message()
         if message and message['type'] == 'pmessage':
-            handle_message_input(json.loads(message['data']))
+            try:
+                handle_message_input(json.loads(message['data']))
+            except Exception as e:
+                print("failed to handle message input", e)
         time.sleep(0.001)
 
 

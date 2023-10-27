@@ -1,5 +1,9 @@
+from typing import List
+
 import pymilvus
 from pymilvus import DataType
+
+from tok715.database.model import Message
 
 
 def collection_messages_build() -> pymilvus.Collection:
@@ -39,3 +43,15 @@ def collection_messages_build() -> pymilvus.Collection:
 
 def collection_messages() -> pymilvus.Collection:
     return pymilvus.Collection(name="messages")
+
+
+def collection_messages_upsert(
+        collection: pymilvus.Collection,
+        items: List[Message],
+        vectors: List[List[float]]):
+    collection.upsert([
+        [item.id for item in items],
+        [item.user_group for item in items],
+        [item.ts for item in items],
+        vectors,
+    ])
