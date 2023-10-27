@@ -33,6 +33,7 @@ sentence-transformers = "^2.2.2"
 requests = "^2.31.0"
 
 [tool.poetry.scripts]
+tok715-inputdirec = 'tok715.apps.inputdirec.cli:main'
 tok715-voicerecog = 'tok715.apps.voicerecog.cli:main'
 tok715-catchqueue = 'tok715.apps.catchqueue.cli:main'
 tok715-vectorhero = 'tok715.apps.vectorhero.cli:main'
