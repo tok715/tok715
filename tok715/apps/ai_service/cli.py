@@ -62,7 +62,6 @@ def main(opt_conf):
             if method == "embeddings":
                 return {
                     "vectors": ai_embeddings_create(e_transformer, args["input_texts"]),
-                    "vector_version": server_conf["vector_version"]
                 }
             return {}
 

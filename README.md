@@ -92,8 +92,7 @@ POST /invoke
     "vectors": [
       [],
       []
-    ],
-    "vector_version": 3
+    ]
   }
 }
 ```
@@ -178,8 +177,6 @@ ai_service:
   server:
     host: '127.0.0.1'
     port: 9891
-    # 当前 embeddings 版本，会与数据库中保存的 vector_version 比对
-    vector_version: 3
 ```
 
 ## 6. 许可证
