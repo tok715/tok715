@@ -4,9 +4,8 @@ from typing import Dict
 
 import click
 
-from tok715 import store
-from tok715.constants import KEY_NL_INPUT_ASTERISK
-from tok715.misc import create_redis_client, load_config
+from tok715 import stor
+from tok715.misc import create_redis_client, load_config, KEY_NL_INPUT_ASTERISK
 
 
 @click.command()
@@ -15,11 +14,11 @@ from tok715.misc import create_redis_client, load_config
 def main(opt_conf, opt_init_db):
     conf = load_config(opt_conf)
 
-    store.connect(conf, opt_init_db)
+    stor.connect(conf, opt_init_db)
 
     # handle incoming message
     def handle_message_input(data: Dict):
-        msg = store.add_message(
+        msg = stor.add_message(
             user_id=data['user']['id'],
             user_group=data['user']['group'],
             user_display_name=data['user']['display_name'],

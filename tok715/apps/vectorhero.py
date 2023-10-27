@@ -2,7 +2,7 @@ import time
 
 import click
 
-from tok715 import store
+from tok715 import stor
 from tok715.ai.client import create_ai_service_client
 from tok715.misc import load_config
 
@@ -15,10 +15,10 @@ def main(opt_conf, opt_init_db):
 
     ai_service = create_ai_service_client(conf)
 
-    store.connect(conf, opt_init_db, ai_service)
+    stor.connect(conf, opt_init_db, ai_service)
 
     def execute():
-        store.update_stale_messages()
+        stor.update_stale_messages()
 
     while True:
         print("triggered at", time.time())

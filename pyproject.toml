@@ -33,14 +33,14 @@ sentence-transformers = "^2.2.2"
 requests = "^2.31.0"
 
 [tool.poetry.scripts]
-tok715-ai-service = 'tok715.ai_service:main'
-tok715-catchqueue = 'tok715.catchqueue:main'
-tok715-danmucolle = 'tok715.danmucolle:main'
-tok715-inputdirec = 'tok715.inputdirec:main'
-tok715-mindignite = 'tok715.mindignite:main'
-tok715-speechloud = 'tok715.speechloud:main'
-tok715-voicerecog = 'tok715.voicerecog:main'
-tok715-vectorhero = 'tok715.vectorhero:main'
+tok715-ai-service = 'tok715.apps.ai_service:main'
+tok715-catchqueue = 'tok715.apps.catchqueue:main'
+tok715-danmucolle = 'tok715.apps.danmucolle:main'
+tok715-inputdirec = 'tok715.apps.inputdirec:main'
+tok715-mindignite = 'tok715.apps.mindignite:main'
+tok715-speechloud = 'tok715.apps.speechloud:main'
+tok715-voicerecog = 'tok715.apps.voicerecog:main'
+tok715-vectorhero = 'tok715.apps.vectorhero:main'
 
 
 [build-system]

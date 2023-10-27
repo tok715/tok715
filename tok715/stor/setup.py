@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List
+from typing import Dict, Optional
 
 import pymilvus
 import sqlalchemy
@@ -6,7 +6,6 @@ from pymilvus import DataType
 from sqlalchemy.orm import Session
 
 from tok715.ai.client import AIServiceClient, create_ai_service_client
-from tok715.store import Message
 
 VECTOR_VERSION = 1
 
@@ -98,12 +97,3 @@ def _define_collection_messages():
 
 def create_session() -> Session:
     return Session(_state.engine)
-
-
-def _save_message_vectors(items: List[Message], vectors: List[List[float]]):
-    _state.collection_messages.upsert([
-        [item.id for item in items],
-        [item.user_group for item in items],
-        [item.ts for item in items],
-        vectors,
-    ])

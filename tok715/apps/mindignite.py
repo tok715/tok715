@@ -2,10 +2,9 @@ import time
 
 import click
 
-from tok715 import store
+from tok715 import stor
 from tok715.ai.client import create_ai_service_client
-from tok715.constants import USER_ID_TOK715, USER_GROUP_TOK715
-from tok715.misc import load_config
+from tok715.misc import load_config, USER_ID_TOK715, USER_GROUP_TOK715
 
 
 @click.command()
@@ -16,10 +15,10 @@ def main(opt_conf, opt_init_db):
 
     ai_service = create_ai_service_client(conf)
 
-    store.connect(conf, opt_init_db, ai_service)
+    stor.connect(conf, opt_init_db, ai_service)
 
     def record_response(response: str):
-        msg = store.add_message(
+        msg = stor.add_message(
             user_id=USER_ID_TOK715,
             user_group=USER_GROUP_TOK715,
             user_display_name='卡妹',
@@ -29,7 +28,7 @@ def main(opt_conf, opt_init_db):
         print('recorded:', msg.id)
 
     def on_triggered():
-        messages = store.fetch_recent_messages()
+        messages = stor.fetch_recent_messages()
 
         context = [{
             'role': 'system',
@@ -44,7 +43,7 @@ def main(opt_conf, opt_init_db):
         record_response(response)
 
     def execute() -> float | int:
-        messages = store.fetch_recent_messages(1)
+        messages = stor.fetch_recent_messages(1)
         if not messages:
             return 2
 

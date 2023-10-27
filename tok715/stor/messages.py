@@ -1,10 +1,11 @@
 import time
-from typing import Sequence
+from typing import Sequence, List
 
 from sqlalchemy import select, or_, and_
 
+from . import Message
 from .model import Message
-from .store import VECTOR_VERSION, _state, create_session, _save_message_vectors
+from .setup import VECTOR_VERSION, _state, create_session
 
 
 def update_stale_messages(limit=10):
@@ -89,3 +90,12 @@ def add_message(**kwargs) -> Message:
             session.commit()
 
     return msg
+
+
+def _save_message_vectors(items: List[Message], vectors: List[List[float]]):
+    _state.collection_messages.upsert([
+        [item.id for item in items],
+        [item.user_group for item in items],
+        [item.ts for item in items],
+        vectors,
+    ])

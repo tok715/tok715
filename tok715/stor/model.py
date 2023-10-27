@@ -1,8 +1,6 @@
 from sqlalchemy import String, Text, BigInteger, Integer
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-from tok715.constants import USER_ID_TOK715
-
 
 class Base(DeclarativeBase):
     pass
@@ -35,4 +33,4 @@ class Message(Base):
         return len(self.content) > 5
 
     def chatml_role(self) -> str:
-        return 'assistant' if self.user_id == USER_ID_TOK715 else 'user'
+        return 'assistant' if self.user_id == "tok715" else 'user'
