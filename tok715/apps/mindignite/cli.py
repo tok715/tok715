@@ -8,8 +8,7 @@ from tok715.constants import USER_ID_TOK715, USER_GROUP_TOK715, VECTOR_VERSION
 from tok715.database.collection import collection_messages, collection_messages_upsert
 from tok715.database.model import Message, message_should_vectorize
 from tok715.database.util import initialize_database
-from tok715.misc.client import connect_milvus, create_database_client, invoke_ai_service_generation, \
-    invoke_ai_service_embeddings
+from tok715.misc.client import connect_milvus, create_database_client, AIServiceClient
 from tok715.misc.config import load_config
 
 
@@ -18,6 +17,8 @@ from tok715.misc.config import load_config
 @click.option("--init-db", "-i", "opt_init_db", is_flag=True, help="initialize database")
 def main(opt_conf, opt_init_db):
     conf = load_config(opt_conf)
+
+    ai_service = AIServiceClient(conf)
 
     # create sqlalchemy engine
     engine = create_database_client(conf)
@@ -49,7 +50,7 @@ def main(opt_conf, opt_init_db):
                 session.commit()
 
                 # calculate vector
-                vectors = invoke_ai_service_embeddings(conf, [msg.content])
+                vectors = ai_service.invoke_embeddings([msg.content])
                 collection_messages_upsert(collection, [msg], vectors)
 
                 # second stage commit
@@ -78,7 +79,7 @@ def main(opt_conf, opt_init_db):
                 ),
                 'text': msg.content,
             })
-        response = invoke_ai_service_generation(conf, context)
+        response = ai_service.invoke_generation(context)
         print(response)
         record_response(response)
 

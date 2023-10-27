@@ -8,7 +8,7 @@ from tok715.constants import VECTOR_VERSION
 from tok715.database.collection import collection_messages
 from tok715.database.model import Message, message_should_vectorize
 from tok715.database.util import initialize_database
-from tok715.misc.client import create_database_client, connect_milvus, invoke_ai_service_embeddings
+from tok715.misc.client import create_database_client, connect_milvus, AIServiceClient
 from tok715.misc.config import load_config
 
 
@@ -17,6 +17,8 @@ from tok715.misc.config import load_config
 @click.option("--init-db", "-i", "opt_init_db", is_flag=True, help="initialize database")
 def main(opt_conf, opt_init_db):
     conf = load_config(opt_conf)
+
+    ai_service = AIServiceClient(conf)
 
     # create sqlalchemy engine
     engine = create_database_client(conf)
@@ -68,8 +70,7 @@ def main(opt_conf, opt_init_db):
 
                 print(f'calculating embeddings for {ids}')
 
-                embeddings = invoke_ai_service_embeddings(
-                    conf,
+                embeddings = ai_service.invoke_embeddings(
                     [item.content for item in to_vectorize],
                 )
 

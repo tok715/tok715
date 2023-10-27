@@ -27,22 +27,23 @@ def connect_milvus(conf: Dict) -> None:
     pymilvus.connections.connect(**kwargs)
 
 
-def invoke_ai_service(conf: Dict, method: str, args: Dict) -> Dict:
-    url = conf['ai_service']['url']
-    r = requests.post(url, json={'method': method, 'args': args})
-    if r.status_code != 200:
-        raise Exception('failed invoking ai_service: ' + r.text)
-    data = r.json()
-    return data['result']
+class AIServiceClient:
+    def __init__(self, conf: Dict):
+        self.url = conf['ai_service']['url']
 
+    def _invoke(self, method: str, args: Dict) -> Dict:
+        r = requests.post(self.url, json={'method': method, 'args': args})
+        if r.status_code != 200:
+            raise Exception('failed invoking ai_service: ' + r.text)
+        data = r.json()
+        return data['result']
 
-def invoke_ai_service_embeddings(conf: Dict, input_texts: List[str]) -> List[List[float]]:
-    args = {'input_texts': input_texts}
-    result = invoke_ai_service(conf, 'embeddings', args)
-    return result['vectors']
+    def invoke_embeddings(self, input_texts: List[str]) -> List[List[float]]:
+        args = {'input_texts': input_texts}
+        result = self._invoke('embeddings', args)
+        return result['vectors']
 
-
-def invoke_ai_service_generation(conf: Dict, context: List[Dict]) -> str:
-    args = {'context': context}
-    result = invoke_ai_service(conf, 'generation', args)
-    return result['response']
+    def invoke_generation(self, context: List[Dict]) -> str:
+        args = {'context': context}
+        result = self._invoke('generation', args)
+        return result['response']
