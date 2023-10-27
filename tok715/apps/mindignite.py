@@ -6,6 +6,8 @@ from tok715 import stor
 from tok715.ai.client import create_ai_service_client
 from tok715.misc import load_config, USER_ID_TOK715, USER_GROUP_TOK715
 
+GENERATION_SYSTEM = '你是一个女性 AI 助理，你的名字叫"卡妹", 你的主人是"YK"'
+
 
 @click.command()
 @click.option("--conf", "-c", "opt_conf", default="tok715.yml", help="config file")
@@ -23,7 +25,7 @@ def main(opt_conf, opt_init_db):
 
             context = [{
                 'role': 'system',
-                'content': '你是一个人工智能女仆，你的名字叫 "卡妹"，你的主人叫 "罐头YK"。我们正在进行日常对话。',
+                'content': GENERATION_SYSTEM,
             }] + [{
                 'role': msg.chatml_role(),
                 'content': msg.content,
@@ -53,9 +55,9 @@ def main(opt_conf, opt_init_db):
             if previous.user_id == USER_ID_TOK715:
                 return 2
 
-            elapsed = int(time.time() * 1000) - previous.ts
-            if elapsed < 2000:
-                return 2000 - elapsed / 1000
+            elapsed_milli = int(time.time() * 1000) - previous.ts
+            if elapsed_milli < 2000:
+                return (2100 - elapsed_milli) / 1000
 
         on_triggered()
 
