@@ -10,7 +10,8 @@ flowchart TB
     node_speaker(用户: 扬声器)
     node_voicerecog_main("模块: tok715-voicerecog")
     node_speechloud_main("模块: tok715-speechloud")
-    node_vectorstor_main("模块: tok715-vectorstor")
+    node_catchqueue_main("模块: tok715-catchqueue")
+    node_vectorhero_main("模块: tok715-vectorhero")
     node_ai_service_main("模块: tok715-ai-service")
     node_mindignite_main("模块: tok715-mindignite")
     node_danmucolle_main("模块: tok715-danmucolle")
@@ -19,19 +20,14 @@ flowchart TB
     node_bilibili_stream(哔哩哔哩: 直播间)
     node_redis_queue_input(Redis 队列: 用户输入)
     node_redis_queue_output(Redis 队列: 模型输出)
-
-    subgraph MySQL
-        node_mysql_messages(表: messages)
-    end
-    subgraph Milvus
-        node_milvus_messages(表: messages)
-    end
-
+    node_mysql_messages(MySQL 数据库)
+    node_milvus_messages(Milvus 向量数据库)
     node_mic --> node_voicerecog_main <--> node_aliyun_nls
     node_voicerecog_main --> node_redis_queue_input
-    node_redis_queue_input --> node_vectorstor_main -- 原始数据 --> node_mysql_messages
-    node_vectorstor_main <-- 向量化 --> node_ai_service_main
-    node_vectorstor_main -- 向量数据 --> node_milvus_messages
+    node_redis_queue_input --> node_catchqueue_main -- 原始数据 --> node_mysql_messages
+    node_mysql_messages -- 原始数据 --> node_vectorhero_main
+    node_vectorhero_main <-- 向量化 --> node_ai_service_main
+    node_vectorhero_main -- 向量数据 --> node_milvus_messages
     node_milvus_messages -- 向量数据 --> node_mindignite_main
     node_mysql_messages -- 原始数据 --> node_mindignite_main
     node_mindignite_main <-- 推理 --> node_ai_service_main
@@ -43,7 +39,7 @@ flowchart TB
 
 ## 2. 依赖
 
-* 最新最好的英伟达显卡
+* 尽可能高端的英伟达显卡
 * **python > 3.10**
 * **ffmpeg**, 用来捕捉麦克风数据流
 * **poetry**, 用来管理 python 依赖
@@ -51,8 +47,6 @@ flowchart TB
 ## 3. 模块
 
 ### 3.1 语音识别模块: `voicerecog`
-
-**功能**
 
 * 使用 `ffmpeg` 捕捉麦克风数据流
 * 传输数据流到阿里云语音识别服务
@@ -63,8 +57,6 @@ flowchart TB
 阿里云语音识别服务要求编码格式为 `pcm_s16le, 16khz, mono`
 
 ### 3.2 AI 服务模块: `ai-service`
-
-**功能**
 
 * 监听 HTTP 端口
 * 提供 `向量计算` 接口
@@ -106,24 +98,15 @@ POST /invoke
 }
 ```
 
-返回:
+### 3.3 存储处理模块: `catchqueue`
 
-```json
-```
+### 3.4 向量处理模块: `vectorhero`
 
-### 3.3 存储处理模块: `vectorstor`
+### 3.5 思维触发模块: `mindignite`
 
-**功能**
+### 3.6 语音合成模块: `speechloud`
 
-* 监听 `redis` `自然语言输入` 主题
-* 存储到 `MySQL`
-* 向量化 (调用 `ai-service`) 并存储到 `Milvus`
-
-### 3.4 思维触发模块: `mindignite`
-
-### 3.5 语音合成模块: `speechloud`
-
-### 3.6 弹幕收集模块: `danmucolle`
+### 3.7 弹幕收集模块: `danmucolle`
 
 ## 4. Redis PUB/SUB 队列
 
@@ -163,14 +146,14 @@ redis:
   port: 6379
 
 # 数据库配置
-# 使用模块: vectorstor
+# 使用模块: catchqueue
 database:
   url: 'mysql+pymysql://root:root@localhost:3306/tok715'
   # 更多参数，翻阅 https://docs.sqlalchemy.org/en/20/core/engines.html
   echo: true
 
 # milvus 配置
-# 使用模块: vectorstor
+# 使用模块: catchqueue
 milvus:
   alias: "default"
   host: 'localhost'
@@ -188,7 +171,7 @@ aliyun:
 
 # AI 服务配置
 # 使用模块: ai-service (server 字段)
-# 使用模块: vectorstor (address 字段)
+# 使用模块: catchqueue (address 字段)
 ai_service:
   address: 127.0.0.1:9891
 

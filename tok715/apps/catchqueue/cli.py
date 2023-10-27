@@ -6,9 +6,8 @@ import click
 from sqlalchemy.orm import Session
 
 from tok715.constants import KEY_NL_INPUT_ASTERISK
-from tok715.database.collection import collection_messages_build, collection_messages
 from tok715.database.model import Message
-from tok715.misc.client import create_redis_client, create_database_client, connect_milvus
+from tok715.misc.client import create_redis_client, create_database_client
 from tok715.misc.config import load_config
 
 
@@ -21,22 +20,13 @@ def main(opt_conf, opt_init_db):
     # create sqlalchemy engine
     engine = create_database_client(conf)
 
-    # connect to milvus
-    connect_milvus(conf)
-
     # initialize database
     if opt_init_db:
         # sqlalchemy engine
         from tok715.database.model import Base
         engine.echo = True
         Base.metadata.create_all(engine)
-
-        # milvus
-        collection_messages_build()
         return
-
-    # milvus collection for messages
-    collection = collection_messages()
 
     # handle incoming message
     def handle_message_input(data: Dict):
@@ -50,9 +40,6 @@ def main(opt_conf, opt_init_db):
                 vector_status=0,
             )
             session.add(msg)
-
-            # TODO: vectorize message and update vector_status
-
             session.commit()
             print(f"message {msg.id} saved")
 

@@ -33,7 +33,8 @@ sentence-transformers = "^2.2.2"
 
 [tool.poetry.scripts]
 tok715-voicerecog = 'tok715.apps.voicerecog.cli:main'
-tok715-vectorstor = 'tok715.apps.vectorstor.cli:main'
+tok715-catchqueue = 'tok715.apps.catchqueue.cli:main'
+tok715-vectorhero = 'tok715.apps.vectorhero.cli:main'
 tok715-ai-service = 'tok715.apps.ai_service.cli:main'
 tok715-mindignite = 'tok715.apps.mindignite.cli:main'
 tok715-speechloud = 'tok715.apps.speechloud.cli:main'
