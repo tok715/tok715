@@ -18,7 +18,8 @@ def main(opt_conf, opt_init_db):
     stor.connect(conf, opt_init_db, ai_service)
 
     def execute():
-        stor.update_stale_messages()
+        with stor.create_session() as session:
+            stor.update_stale_messages(session)
 
     while True:
         print("triggered at", time.time())

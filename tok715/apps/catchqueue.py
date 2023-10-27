@@ -18,14 +18,16 @@ def main(opt_conf, opt_init_db):
 
     # handle incoming message
     def handle_message_input(data: Dict):
-        msg = stor.add_message(
-            user_id=data['user']['id'],
-            user_group=data['user']['group'],
-            user_display_name=data['user']['display_name'],
-            content=data['content'],
-            ts=data['ts'],
-        )
-        print(f"message {msg.id} saved")
+        with stor.create_session() as session:
+            msg = stor.add_message(
+                session,
+                user_id=data['user']['id'],
+                user_group=data['user']['group'],
+                user_display_name=data['user']['display_name'],
+                content=data['content'],
+                ts=data['ts'],
+            )
+            print(f"message #{msg.id} saved")
 
     # create redis client
     redis_client = create_redis_client(conf)
