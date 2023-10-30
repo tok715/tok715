@@ -1,5 +1,5 @@
 import time
-from typing import Sequence, List
+from typing import List
 
 from sqlalchemy import select, or_, and_
 from sqlalchemy.orm import Session
@@ -54,12 +54,12 @@ def update_stale_messages(session: Session, limit=10):
     session.commit()
 
 
-def fetch_recent_messages(session: Session, limit=20) -> Sequence[Message]:
-    return session.scalars(
+def fetch_recent_messages(session: Session, limit=20) -> List[Message]:
+    return list(reversed(session.scalars(
         select(
             Message
         ).order_by(Message.ts.desc()).limit(limit)
-    ).all()
+    ).all()))
 
 
 def add_message(session: Session, **kwargs) -> Message:

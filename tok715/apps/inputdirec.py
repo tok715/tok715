@@ -8,7 +8,8 @@ from tok715.misc import create_redis_client, load_config, KEY_NL_INPUT
 
 @click.command()
 @click.option("--conf", "-c", "opt_conf", default="tok715.yml", help="config file")
-def main(opt_conf: str):
+@click.argument("input_text")
+def main(opt_conf: str, input_text: str):
     conf = load_config(opt_conf)
 
     # sub conf
@@ -21,15 +22,13 @@ def main(opt_conf: str):
 
     redis_client = create_redis_client(conf)
 
-    while True:
-        content = input("input text:").strip()
-        result = json.dumps({
-            "ts": int(round(time.time() * 1000)),
-            "content": content,
-            "user": user_conf,
-        })
+    result = json.dumps({
+        "ts": int(round(time.time() * 1000)),
+        "content": input_text.strip(),
+        "user": user_conf,
+    })
 
-        redis_client.publish(KEY_NL_INPUT(user_conf['group'], user_conf['id']), result)
+    redis_client.publish(KEY_NL_INPUT(user_conf['group'], user_conf['id']), result)
 
 
 if __name__ == "__main__":

@@ -62,11 +62,8 @@ def main(opt_conf):
                     "vectors": e_executor.vectorize(args["input_texts"]),
                 }
             if method == 'generation':
-                existing = []
-                for item in args['context']:
-                    existing.append((item['role'], item['content']))
                 return {
-                    "response": g_executor.generate(existing),
+                    "response": g_executor.chat(**args),
                 }
             return {}
 

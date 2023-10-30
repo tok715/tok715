@@ -19,9 +19,8 @@ class AIServiceClient:
         result = self._invoke('embeddings', args)
         return result['vectors']
 
-    def invoke_generation(self, context: List[Dict]) -> str:
-        args = {'context': context}
-        result = self._invoke('generation', args)
+    def invoke_generation(self, **kwargs) -> str:
+        result = self._invoke('generation', kwargs)
         return result['response']
 
 
