@@ -4,8 +4,7 @@ import time
 
 import click
 
-from tok715.misc import create_redis_client, load_config, KEY_ALIYUN_NLS_TOKEN, KEY_NL_INPUT
-from tok715.vendor import nls
+from tok715.misc import *
 
 
 def decode_aliyun_nls_data(s: str) -> (str, int):
@@ -25,53 +24,20 @@ def main(opt_conf: str, opt_device: str):
     conf = load_config(opt_conf)
 
     # sub conf
-    user_conf = {
-        "id": "owner",
-        "name": "主人",
-        "group": "owner",
-    }
-    user_conf.update(conf["user"])
+    user_conf = conf["user"]
 
     # check ffmpeg
-    print(">>>>> checking ffmpeg")
-    try:
-        subprocess.run(["ffmpeg", "-version"], check=True)
-    except Exception as e:
-        print(f"failed checking ffmpeg: {e}")
+    if not ffmpeg_check():
+        return
 
     # choose microphone device
     if not opt_device:
-        subprocess.run([
-            "ffmpeg",
-            "-hide_banner",
-            "-f",
-            "avfoundation",
-            "-list_devices",
-            "true",
-            "-i",
-            "",
-        ])
-        opt_device = input("choose microphone device: ").strip()
+        opt_device = ffmpeg_choose_device('microphone')
 
     print(f"using microphone device: {opt_device}")
 
     # create redis client
     redis_client = create_redis_client(conf)
-
-    # retrieve aliyun_nls_token
-    nls_conf = conf['aliyun']['nls']
-    aliyun_nls_token = redis_client.get(KEY_ALIYUN_NLS_TOKEN)
-
-    if not aliyun_nls_token:
-        print(">>>>> retrieving aliyun_nls_token")
-        aliyun_nls_token, expires_at = nls.get_token(
-            nls_conf['access_key_id'],
-            nls_conf['access_key_secret'],
-        )
-        redis_client.setex(KEY_ALIYUN_NLS_TOKEN, expires_at - int(time.time()), aliyun_nls_token)
-        print(f"aliyun_nls_token fetched")
-    else:
-        print(f"aliyun_nls_token found")
 
     def on_sentence_end(s: str, *args):
         content, index = decode_aliyun_nls_data(s)
@@ -94,10 +60,9 @@ def main(opt_conf: str, opt_device: str):
         print(f"on_result_changed: {result}")
 
     # start speech recognizer
-    st = nls.NlsSpeechTranscriber(
-        url=nls_conf['endpoint'],
-        token=aliyun_nls_token,
-        appkey=nls_conf['app_key'],
+    st = create_aliyun_nls_transcriber(
+        conf,
+        redis_client,
         on_sentence_end=on_sentence_end,
         on_result_changed=on_result_changed,
     )

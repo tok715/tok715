@@ -1,11 +1,9 @@
-import json
-import time
 from typing import Dict
 
 import click
 
 from tok715 import stor
-from tok715.misc import create_redis_client, load_config, KEY_NL_INPUT_ASTERISK
+from tok715.misc import create_redis_client, load_config, KEY_NL_INPUT_ASTERISK, redis_queue_consume
 
 
 @click.command()
@@ -32,18 +30,12 @@ def main(opt_conf, opt_init_db):
     # create redis client
     redis_client = create_redis_client(conf)
 
-    # start redis subscribe
-    ps = redis_client.pubsub()
-    ps.psubscribe(KEY_NL_INPUT_ASTERISK)
-
-    while True:
-        message = ps.get_message()
-        if message and message['type'] == 'pmessage':
-            try:
-                handle_message_input(json.loads(message['data']))
-            except Exception as e:
-                print("failed to handle message input", e)
-        time.sleep(0.001)
+    # run queue consuming
+    redis_queue_consume(
+        redis_client,
+        handle_message_input,
+        key_patterns=[KEY_NL_INPUT_ASTERISK],
+    )
 
 
 if __name__ == "__main__":

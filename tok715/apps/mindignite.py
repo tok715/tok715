@@ -7,7 +7,7 @@ import click
 from tok715 import stor
 from tok715.ai.client import create_ai_service_client
 from tok715.ai.tunning import SYSTEM_HISTORY
-from tok715.misc import load_config, USER_ID_TOK715, USER_GROUP_TOK715, USER_DISPLAY_NAME_TOK715
+from tok715.misc import *
 
 
 def clean_conversation_text(input_text: str) -> str:
@@ -29,6 +29,9 @@ def main(opt_conf, opt_init_db):
     ai_service = create_ai_service_client(conf)
 
     stor.connect(conf, opt_init_db, ai_service)
+
+    # create redis client
+    redis_client = create_redis_client(conf)
 
     def create_chat_context(messages: List[stor.Message]) -> Optional[Dict]:
         history = []
@@ -66,10 +69,12 @@ def main(opt_conf, opt_init_db):
             messages = stor.fetch_recent_messages(session, 50)
 
             generation_args = create_chat_context(messages)
-            print(generation_args)
-            print("==============================")
+
             if not generation_args:
                 return
+
+            print(generation_args)
+            print("==============================")
 
             response = ai_service.invoke_generation(**generation_args)
             response = clean_conversation_text(response)
@@ -78,6 +83,7 @@ def main(opt_conf, opt_init_db):
             if not response:
                 return
 
+            # save message
             msg = stor.add_message(
                 session,
                 user_id=USER_ID_TOK715,
@@ -88,8 +94,14 @@ def main(opt_conf, opt_init_db):
             )
             print(f"message #{msg.id} saved")
 
+            # push to redis
+            redis_client.rpush(KEY_SPEECH_SYNTHESIZER_INVOCATION, response)
+
     def execute() -> float | int | None:
         with stor.create_session() as session:
+            if redis_client.get(KEY_SPEECH_SYNTHESIZER_WORKING):
+                return 2
+
             messages = stor.fetch_recent_messages(session, 1)
             if not messages:
                 return 2
