@@ -6,7 +6,8 @@ import click
 
 from tok715 import stor
 from tok715.ai.client import create_ai_service_client
-from tok715.misc import load_config, USER_ID_TOK715, USER_GROUP_TOK715, USER_ID_OWNER
+from tok715.ai.tunning import SYSTEM_HISTORY
+from tok715.misc import load_config, USER_ID_TOK715, USER_GROUP_TOK715, USER_DISPLAY_NAME_TOK715
 
 
 def clean_conversation_text(input_text: str) -> str:
@@ -40,7 +41,7 @@ def main(opt_conf, opt_init_db):
                 if not input_user:
                     continue
                 input_assistant += msg.content.strip() + '\n'
-            if msg.user_id == USER_ID_OWNER:
+            else:
                 # start new line
                 if input_user and input_assistant:
                     history.append([input_user.strip(), input_assistant.strip()])
@@ -58,7 +59,7 @@ def main(opt_conf, opt_init_db):
         if not input_user:
             return None
 
-        return {'input_text': input_user, 'history': history}
+        return {'input_text': input_user, 'history': SYSTEM_HISTORY + history}
 
     def on_triggered():
         with stor.create_session() as session:
@@ -81,7 +82,7 @@ def main(opt_conf, opt_init_db):
                 session,
                 user_id=USER_ID_TOK715,
                 user_group=USER_GROUP_TOK715,
-                user_display_name='卡妹',
+                user_display_name=USER_DISPLAY_NAME_TOK715,
                 content=response,
                 ts=int(time.time() * 1000),
             )
