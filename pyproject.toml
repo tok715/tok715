@@ -18,19 +18,21 @@ SQLAlchemy = "^2.0"
 PyMySQL = "^1.1"
 pika = "^1.3"
 PyYAML = "^6.0"
-torch = ">=2.0"
-torchvision = "^0.16"
-torchaudio = "^2.1"
 redis = { extras = ["hiredis"], version = "^5.0.1" }
 oss2 = "^2.18.2"
 aliyun-python-sdk-core = ">=2.13.3"
+requests = "^2.31.0"
+
+[tool.poetry.group.ai-service.dependencies]
+torch = ">=2.0"
+torchvision = "^0.16"
+torchaudio = "^2.1"
 matplotlib = ">=3.3.4"
 huggingface-hub = "^0.17"
 transformers = "4.32.0"
 accelerate = "^0.24.0"
 safetensors = "^0.4.0"
 sentence-transformers = "^2.2.2"
-requests = "^2.31.0"
 protobuf = "^4.24.4"
 cpm-kernels = "^1.0.11"
 gradio = "^3.50.2"
@@ -54,7 +56,6 @@ tok715-mindignite = 'tok715.apps.mindignite:main'
 tok715-speechloud = 'tok715.apps.speechloud:main'
 tok715-voicerecog = 'tok715.apps.voicerecog:main'
 tok715-vectorhero = 'tok715.apps.vectorhero:main'
-
 
 [build-system]
 requires = ["poetry-core"]
