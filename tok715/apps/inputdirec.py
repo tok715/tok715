@@ -1,9 +1,7 @@
-import json
-import time
-
 import click
 
-from tok715.misc import create_redis_client, load_config, KEY_NL_INPUT
+from tok715 import cach
+from tok715.misc import load_config
 
 
 @click.command()
@@ -12,23 +10,16 @@ from tok715.misc import create_redis_client, load_config, KEY_NL_INPUT
 def main(opt_conf: str, input_text: str):
     conf = load_config(opt_conf)
 
-    # sub conf
-    user_conf = {
-        "id": "owner",
-        "name": "主人",
-        "group": "owner",
-    }
-    user_conf.update(conf["user"])
+    cach.connect(conf)
 
-    redis_client = create_redis_client(conf)
+    user_conf = conf['user']
 
-    result = json.dumps({
-        "ts": int(round(time.time() * 1000)),
-        "content": input_text.strip(),
-        "user": user_conf,
-    })
-
-    redis_client.publish(KEY_NL_INPUT(user_conf['group'], user_conf['id']), result)
+    cach.publish_nl_input(
+        user_id=user_conf['id'],
+        user_group=user_conf['group'],
+        user_display_name=user_conf['display_name'],
+        content=input_text.strip(),
+    )
 
 
 if __name__ == "__main__":

@@ -1,9 +1,9 @@
-from typing import Dict
+import json
 
 import click
 
-from tok715 import stor
-from tok715.misc import create_redis_client, load_config, KEY_NL_INPUT_ASTERISK, redis_queue_consume
+from tok715 import stor, cach
+from tok715.misc import load_config, KEY_NL_INPUT_ASTERISK
 
 
 @click.command()
@@ -12,10 +12,13 @@ from tok715.misc import create_redis_client, load_config, KEY_NL_INPUT_ASTERISK,
 def main(opt_conf, opt_init_db):
     conf = load_config(opt_conf)
 
+    cach.connect(conf)
     stor.connect(conf, opt_init_db)
 
     # handle incoming message
-    def handle_message_input(data: Dict):
+    def handle_message_input(channel: str, raw: str):
+        data = json.loads(raw)
+
         with stor.create_session() as session:
             msg = stor.add_message(
                 session,
@@ -27,14 +30,9 @@ def main(opt_conf, opt_init_db):
             )
             print(f"message #{msg.id} saved")
 
-    # create redis client
-    redis_client = create_redis_client(conf)
-
-    # run queue consuming
-    redis_queue_consume(
-        redis_client,
-        handle_message_input,
-        key_patterns=[KEY_NL_INPUT_ASTERISK],
+    cach.consume_topic_forever(
+        [KEY_NL_INPUT_ASTERISK],
+        on_data=handle_message_input,
     )
 
 

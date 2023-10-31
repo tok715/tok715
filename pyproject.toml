@@ -23,6 +23,9 @@ oss2 = "^2.18.2"
 aliyun-python-sdk-core = ">=2.13.3"
 requests = "^2.31.0"
 
+[tool.poetry.group.ai-service]
+optional = true
+
 [tool.poetry.group.ai-service.dependencies]
 torch = ">=2.0"
 torchvision = "^0.16"
@@ -49,12 +52,11 @@ optimum = "^1.13.2"
 
 [tool.poetry.scripts]
 tok715-ai-service = 'tok715.apps.ai_service:main'
+tok715-audioinout = 'tok715.apps.audioinout:main'
 tok715-catchqueue = 'tok715.apps.catchqueue:main'
 tok715-danmucolle = 'tok715.apps.danmucolle:main'
 tok715-inputdirec = 'tok715.apps.inputdirec:main'
 tok715-mindignite = 'tok715.apps.mindignite:main'
-tok715-speechloud = 'tok715.apps.speechloud:main'
-tok715-voicerecog = 'tok715.apps.voicerecog:main'
 tok715-vectorhero = 'tok715.apps.vectorhero:main'
 
 [build-system]

@@ -4,7 +4,7 @@ from typing import List, Optional, Dict
 
 import click
 
-from tok715 import stor
+from tok715 import stor, cach
 from tok715.ai.client import create_ai_service_client
 from tok715.ai.tunning import SYSTEM_HISTORY
 from tok715.misc import *
@@ -28,10 +28,8 @@ def main(opt_conf, opt_init_db):
 
     ai_service = create_ai_service_client(conf)
 
+    cach.connect(conf)
     stor.connect(conf, opt_init_db, ai_service)
-
-    # create redis client
-    redis_client = create_redis_client(conf)
 
     def create_chat_context(messages: List[stor.Message]) -> Optional[Dict]:
         history = []
@@ -95,11 +93,11 @@ def main(opt_conf, opt_init_db):
             print(f"message #{msg.id} saved")
 
             # push to redis
-            redis_client.rpush(KEY_SPEECH_SYNTHESIZER_INVOCATION, response)
+            cach.append_queue(KEY_SPEECH_SYNTHESIZER_INVOCATION, response)
 
     def execute() -> float | int | None:
         with stor.create_session() as session:
-            if redis_client.get(KEY_SPEECH_SYNTHESIZER_WORKING):
+            if cach.is_flag_on(KEY_SPEECH_SYNTHESIZER_WORKING):
                 return 2
 
             messages = stor.fetch_recent_messages(session, 1)

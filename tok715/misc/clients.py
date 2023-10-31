@@ -8,13 +8,6 @@ from tok715.vendor import nls
 KEY_ALIYUN_NLS_TOKEN = "tok715:voicerecog:aliyun_nls_token"
 
 
-def create_redis_client(conf: Dict) -> redis.Redis:
-    kwargs = {"decode_responses": True}
-    if 'redis' in conf:
-        kwargs.update(conf['redis'])
-    return redis.Redis(**kwargs)
-
-
 def ensure_aliyun_nls_token(
         access_key_id: str,
         access_key_secret: str,
