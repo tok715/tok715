@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from tok715 import stor, cach
 from tok715.ai.client import create_ai_service_client
-from tok715.ai.tunning import SYSTEM_HISTORY, SYSTEM_PROMPT
+from tok715.ai.tunning import system_history, system_prompt
 from tok715.misc import *
 from tok715.stor import Message
 
@@ -107,7 +107,7 @@ def process_ignite(conf: Dict):
         if not query:
             return None
 
-        return {'query': query, 'history': SYSTEM_HISTORY + history, 'system': SYSTEM_PROMPT}
+        return {'query': query, 'history': system_history() + history, 'system': system_prompt()}
 
     def on_triggered():
         with stor.create_session() as session:

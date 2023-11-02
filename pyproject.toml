@@ -5,6 +5,10 @@ description = "CODENAME: TOK715"
 authors = ["GUO YANKE <hi@guoyk.xyz>"]
 license = "MIT"
 readme = "README.md"
+include = [
+    { path = "tok715/ai/tunning/*.txt" },
+    { path = "tok715/ai/tunning/*.json" }
+]
 
 packages = [
     { include = "tok715" }
