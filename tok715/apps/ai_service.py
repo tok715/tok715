@@ -57,6 +57,7 @@ def main(opt_conf):
     class AIServiceHTTPRequestHandler(JSONInvokeHTTPRequestHandler):
 
         def do_invoke(self, method: str, args: Dict) -> Dict:
+            print(f'invoke {method}: {args}')
             if method == "embeddings":
                 return {
                     "vectors": embeddings.encode(args["input_texts"]),
