@@ -28,7 +28,7 @@ def main(opt_conf, opt_init_db):
                 content=data['content'],
                 ts=data['ts'],
             )
-            print(f"message #{msg.id} saved")
+            print(f"#{msg.id}: {msg.content}")
 
     cach.consume_topic_forever(
         [KEY_NL_INPUT_ASTERISK],

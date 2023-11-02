@@ -1,2 +1,2 @@
 from .embeddings import EmbeddingsExecutor
-from .generation import GenerationExecutor
+from .chat import ChatExecutor

@@ -4,7 +4,7 @@ from typing import Dict
 
 import click
 
-from tok715.ai.executors import EmbeddingsExecutor, GenerationExecutor
+from tok715.ai.executors import EmbeddingsExecutor, ChatExecutor
 from tok715.misc import load_config
 
 
@@ -47,10 +47,10 @@ def main(opt_conf):
     server_conf = conf["ai_service"]["server"]
 
     print("loading embeddings executor")
-    e_executor = EmbeddingsExecutor()
+    embeddings = EmbeddingsExecutor()
 
-    print("loading generation executor")
-    g_executor = GenerationExecutor()
+    print("loading chat executor")
+    chat = ChatExecutor()
 
     print("all executors loaded")
 
@@ -59,11 +59,13 @@ def main(opt_conf):
         def do_invoke(self, method: str, args: Dict) -> Dict:
             if method == "embeddings":
                 return {
-                    "vectors": e_executor.vectorize(args["input_texts"]),
+                    "vectors": embeddings.encode(args["input_texts"]),
                 }
-            if method == 'generation':
+            if method == 'chat':
+                response, history = chat.chat(**args)
                 return {
-                    "response": g_executor.chat(**args),
+                    "response": response,
+                    "history": history
                 }
             return {}
 

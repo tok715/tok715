@@ -5,7 +5,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from .constants import MODEL_GENERATION
 
 
-class GenerationExecutor:
+class ChatExecutor:
     def __init__(self):
         tokenizer = AutoTokenizer.from_pretrained(
             MODEL_GENERATION,
@@ -23,6 +23,5 @@ class GenerationExecutor:
         self.model = model
         self.tokenizer = tokenizer
 
-    def chat(self, input_text: str, history: List[Tuple[str, str]] = None) -> str:
-        response, _ = self.model.chat(self.tokenizer, input_text, history=history)
-        return response
+    def chat(self, **kwargs) -> Tuple[str, List[List[str]]]:
+        return self.model.chat(self.tokenizer, **kwargs)

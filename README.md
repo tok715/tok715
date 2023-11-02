@@ -105,17 +105,15 @@ POST /invoke
 
 ```json
 {
-  "method": "generation",
+  "method": "chat",
   "args": {
-    "context": [
-      {
-        "role": "system",
-        "content": "你是一个小可爱"
-      },
-      {
-        "role": "user",
-        "content": "介你自己绍一下"
-      }
+    "query": "",
+    "system": "",
+    "history": [
+      [
+        "你好",
+        "你好"
+      ]
     ]
   }
 }
@@ -126,7 +124,13 @@ POST /invoke
 ```json
 {
   "result": {
-    "response": "我是小可爱"
+    "response": "我是小可爱",
+    "history": [
+      [
+        "你好",
+        "你好"
+      ]
+    ]
   }
 }
 ```

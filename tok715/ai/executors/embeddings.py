@@ -13,7 +13,7 @@ class EmbeddingsExecutor:
             cache_folder='_cache',
         )
 
-    def vectorize(self, input_texts: List[str]) -> List[List[float]]:
+    def encode(self, input_texts: List[str]) -> List[List[float]]:
         output = self.st.encode([
             "query: " + input_text for input_text in input_texts
         ], normalize_embeddings=True)
