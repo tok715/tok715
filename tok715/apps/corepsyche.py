@@ -1,14 +1,16 @@
 import json
 import re
 import time
-from typing import Dict, List, Optional
+from typing import Dict, Optional, List, Tuple
 
 import click
+from sqlalchemy.orm import Session
 
 from tok715 import stor, cach
 from tok715.ai.client import create_ai_service_client
-from tok715.ai.tunning import SYSTEM_HISTORY
+from tok715.ai.tunning import SYSTEM_HISTORY, SYSTEM_PROMPT
 from tok715.misc import *
+from tok715.stor import Message
 
 
 def process_save_input(conf: Dict):
@@ -49,8 +51,8 @@ def process_maintenance(conf: Dict):
             execute()
         except Exception as e:
             print(f'maintenance failed: {e}')
-            time.sleep(10)
-        time.sleep(3)
+        time.sleep(30)
+
 
 def clean_conversation_text(input_text: str) -> str:
     output = []
@@ -62,56 +64,62 @@ def clean_conversation_text(input_text: str) -> str:
     return '。'.join(output)
 
 
+def create_history_from_messages(messages: List[Message]) -> Tuple[Optional[str], List[List[str]]]:
+    history = []
+
+    input_user = ''
+    input_assistant = ''
+    for msg in messages:
+        if msg.user_id == USER_ID_TOK715:
+            # ignore leading messages from tok715
+            if not input_user:
+                continue
+            input_assistant += msg.content.strip() + '\n'
+        else:
+            # start new line
+            if input_user and input_assistant:
+                history.append([input_user.strip(), input_assistant.strip()])
+                input_user = ''
+                input_assistant = ''
+            input_user += msg.content.strip() + '\n'
+
+    if input_user and input_assistant:
+        history.append([input_user, input_assistant])
+        input_user = ''
+        input_assistant = ''
+
+    input_user = input_user.strip()
+
+    return input_user, history
+
+
 def process_ignite(conf: Dict):
     ai_service = create_ai_service_client(conf)
 
     cach.connect(conf)
     stor.connect(conf, ai_service=ai_service)
 
-    def create_chat_context(messages: List[stor.Message]) -> Optional[Dict]:
-        history = []
+    def create_chat_args(session: Session) -> Optional[Dict]:
+        messages = stor.fetch_recent_messages(session, 50)
 
-        input_user = ''
-        input_assistant = ''
-        for msg in messages:
-            if msg.user_id == USER_ID_TOK715:
-                # ignore leading messages from tok715
-                if not input_user:
-                    continue
-                input_assistant += msg.content.strip() + '\n'
-            else:
-                # start new line
-                if input_user and input_assistant:
-                    history.append([input_user.strip(), input_assistant.strip()])
-                    input_user = ''
-                    input_assistant = ''
-                input_user += msg.content.strip() + '\n'
+        query, history = create_history_from_messages(messages)
 
-        if input_user and input_assistant:
-            history.append([input_user, input_assistant])
-            input_user = ''
-            input_assistant = ''
-
-        input_user = input_user.strip()
-
-        if not input_user:
+        if not query:
             return None
 
-        return {'input_text': input_user, 'history': SYSTEM_HISTORY + history}
+        return {'query': query, 'history': SYSTEM_HISTORY + history, 'system': SYSTEM_PROMPT}
 
     def on_triggered():
         with stor.create_session() as session:
-            messages = stor.fetch_recent_messages(session, 50)
+            chat_args = create_chat_args(session)
 
-            generation_args = create_chat_context(messages)
-
-            if not generation_args:
+            if not chat_args:
                 return
 
-            print(generation_args)
+            print(chat_args)
             print("==============================")
 
-            response = ai_service.invoke_generation(**generation_args)
+            response = ai_service.invoke_chat(**chat_args)
             response = clean_conversation_text(response)
             print(response)
 
@@ -127,7 +135,7 @@ def process_ignite(conf: Dict):
                 content=response,
                 ts=int(time.time() * 1000),
             )
-            print(f"message #{msg.id} saved")
+            print(f"saved output#{msg.id}")
 
             # push to redis
             cach.append_queue(KEY_SPEECH_SYNTHESIZER_INVOCATION, response)

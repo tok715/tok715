@@ -1,3 +1,4 @@
+import copy
 from typing import Optional, Dict
 
 import redis
@@ -14,7 +15,9 @@ _state = State()
 def connect(conf: Dict):
     kwargs = {"decode_responses": True}
     if 'redis' in conf:
-        kwargs.update(conf['redis'])
+        kwargs.update(
+            copy.deepcopy(conf['redis'])
+        )
     _state.redis_client = redis.Redis(**kwargs)
 
 

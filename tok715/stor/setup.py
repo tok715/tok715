@@ -1,3 +1,4 @@
+import copy
 from typing import Dict, Optional
 
 import pymilvus
@@ -33,9 +34,9 @@ def connect(
     :return:
     """
     # sqlalchemy
-    kwargs: Dict = conf['database']
-    url = kwargs.pop('url')
-    _state.engine = sqlalchemy.create_engine(url, **kwargs)
+    engine_args: Dict = copy.deepcopy(conf['database'])
+    url = engine_args.pop('url')
+    _state.engine = sqlalchemy.create_engine(url, **engine_args)
 
     if init_store:
         from .model import Base
@@ -43,10 +44,12 @@ def connect(
         Base.metadata.create_all(_state.engine)
 
     # milvus
-    kwargs = {'alias': 'default'}
+    milvus_args = {'alias': 'default'}
     if 'milvus' in conf:
-        kwargs.update(conf['milvus'])
-    pymilvus.connections.connect(**kwargs)
+        milvus_args.update(
+            copy.deepcopy(conf['milvus'])
+        )
+    pymilvus.connections.connect(**milvus_args)
     if init_store:
         _state.collection_messages = _define_collection_messages()
     else:

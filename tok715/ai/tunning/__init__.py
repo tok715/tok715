@@ -1,1 +1,1 @@
-from .history import SYSTEM_HISTORY
+from .system import SYSTEM_PROMPT, SYSTEM_HISTORY

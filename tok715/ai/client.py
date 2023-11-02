@@ -19,8 +19,14 @@ class AIServiceClient:
         result = self._invoke('embeddings', args)
         return result['vectors']
 
-    def invoke_generation(self, **kwargs) -> str:
-        result = self._invoke('generation', kwargs)
+    def invoke_chat(self, query: str, history: List[List[str]] = None, system: str = None) -> str:
+        if history is None:
+            history = []
+        result = self._invoke('chat', {
+            'query': query,
+            'history': history,
+            'system': system,
+        })
         return result['response']
 
 
