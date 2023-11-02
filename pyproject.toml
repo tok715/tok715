@@ -53,11 +53,10 @@ optimum = "^1.13.2"
 [tool.poetry.scripts]
 tok715-ai-service = 'tok715.apps.ai_service:main'
 tok715-audiotouch = 'tok715.apps.audiotouch:main'
-tok715-catchqueue = 'tok715.apps.catchqueue:main'
+tok715-corepsyche = 'tok715.apps.corepsyche:main'
+
 tok715-danmucolle = 'tok715.apps.danmucolle:main'
 tok715-inputdirec = 'tok715.apps.inputdirec:main'
-tok715-mindignite = 'tok715.apps.mindignite:main'
-tok715-vectorhero = 'tok715.apps.vectorhero:main'
 
 [build-system]
 requires = ["poetry-core"]

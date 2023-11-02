@@ -9,33 +9,28 @@ flowchart TB
     node_mic(用户: 麦克风)
     node_speaker(用户: 扬声器)
     node_audiotouch_main("模块: tok715-audiotouch")
-    node_catchqueue_main("模块: tok715-catchqueue")
-    node_vectorhero_main("模块: tok715-vectorhero")
+    node_inputdirec_main("模块: tok715-inputdirec")
     node_ai_service_main("模块: tok715-ai-service")
-    node_mindignite_main("模块: tok715-mindignite")
+    node_corepsyche_main("模块: tok715-corepsyche")
     node_danmucolle_main("模块: tok715-danmucolle")
-    node_aliyun_nls(阿里云: 语音识别服务)
-    node_aliyun_tts(阿里云: 语音合成服务)
+    node_aliyun_nls(阿里云: 语音识别/合成服务)
     node_bilibili_stream(哔哩哔哩: 直播间)
-    node_redis_queue_input(Redis 队列: 用户输入)
-    node_redis_queue_output(Redis 队列: 模型输出)
+    node_redis_queue(Redis 队列)
     node_mysql_messages(MySQL 数据库)
     node_milvus_messages(Milvus 向量数据库)
-    node_mic --> node_audiotouch_main <--> node_aliyun_nls
-    node_audiotouch_main --> node_redis_queue_input
-    node_redis_queue_input --> node_catchqueue_main -- 原始数据 --> node_mysql_messages
-    node_catchqueue_main <-- 向量化 --> node_ai_service_main
-    node_catchqueue_main -- 向量数据 --> node_milvus_messages
-    node_mysql_messages -- 原始数据 --> node_vectorhero_main
-    node_vectorhero_main <-- 向量化 --> node_ai_service_main
-    node_vectorhero_main -- 向量数据 --> node_milvus_messages
-    node_milvus_messages -- 向量数据 --> node_mindignite_main
-    node_mysql_messages -- 原始数据 --> node_mindignite_main
-    node_mindignite_main <-- 推理 --> node_ai_service_main
-    node_mindignite_main --> node_redis_queue_output --> node_audiotouch_main
-    node_audiotouch_main <--> node_aliyun_tts
+    node_mic --> node_audiotouch_main
     node_audiotouch_main --> node_speaker
-    node_bilibili_stream --> node_danmucolle_main --> node_redis_queue_input
+    node_audiotouch_main <--> node_aliyun_nls
+    node_audiotouch_main -- 用户输入 --> node_redis_queue
+    node_redis_queue -- 模型输出 --> node_audiotouch_main
+    node_inputdirec_main -- 用户输入 --> node_redis_queue
+    node_bilibili_stream --> node_danmucolle_main -- 用户输入 --> node_redis_queue
+    node_redis_queue -- 用户输入 --> node_corepsyche_main
+    node_corepsyche_main -- 模型输出 --> node_redis_queue
+    node_corepsyche_main <-- 原始数据 --> node_mysql_messages
+    node_corepsyche_main <-- 向量化 --> node_ai_service_main
+    node_corepsyche_main <-- 推理 --> node_ai_service_main
+    node_corepsyche_main <-- 向量数据 --> node_milvus_messages
 ```
 
 ## 2. 依赖
@@ -54,9 +49,9 @@ flowchart TB
     * 传输数据流到阿里云语音识别服务
     * 使用 `redis` 发布识别结果到 `自然语言输入` 主题
 * 输出
-  * 使用 `redis` 订阅 `模型输出` 主题
-  * 适用 阿里云语音合成服务 将输出结果转换为语音
-  * 使用 `ffplay` 播放语音合成结果
+    * 使用 `redis` 订阅 `模型输出` 主题
+    * 适用 阿里云语音合成服务 将输出结果转换为语音
+    * 使用 `ffplay` 播放语音合成结果
 
 **输入格式**
 
@@ -139,13 +134,9 @@ POST /invoke
 }
 ```
 
-### 3.3 存储处理模块: `catchqueue`
+### 3.3 核心思维模块: `corepsyche`
 
-### 3.4 向量维护模块: `vectorhero`
-
-### 3.5 思维触发模块: `mindignite`
-
-### 3.6 弹幕收集模块: `danmucolle`
+### 3.4 弹幕收集模块: `danmucolle`
 
 ## 4. Redis PUB/SUB 队列
 
@@ -179,20 +170,20 @@ user:
 
 # redis 配置
 # 更多参数，翻阅 https://redis-py.readthedocs.io/en/stable/connections.html
-# 使用模块: audiotouch
+# 使用模块: audiotouch, corepsyche, danmucolle
 redis:
   host: '127.0.0.1'
   port: 6379
 
 # 数据库配置
-# 使用模块: catchqueue
+# 使用模块: corepsyche
 database:
   url: 'mysql+pymysql://root:root@localhost:3306/tok715'
   # 更多参数，翻阅 https://docs.sqlalchemy.org/en/20/core/engines.html
   echo: true
 
 # milvus 配置
-# 使用模块: catchqueue
+# 使用模块: corepsyche
 milvus:
   alias: "default"
   host: 'localhost'
@@ -211,6 +202,7 @@ aliyun:
 # AI 服务配置
 # 客户端使用 url 字段调用
 # 服务端使用 server 字段配置
+# 使用模块: corepsyche
 ai_service:
   url: http://127.0.0.1:9891/invoke
 
