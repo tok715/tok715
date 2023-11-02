@@ -1,4 +1,3 @@
-import json
 import re
 import time
 from typing import Dict, Optional, List, Tuple
@@ -11,6 +10,7 @@ from tok715.ai.client import create_ai_service_client
 from tok715.ai.tunning import system_history, system_prompt
 from tok715.misc import *
 from tok715.stor import Message
+from tok715.types import UserInput
 
 
 def process_save_input(conf: Dict):
@@ -18,23 +18,19 @@ def process_save_input(conf: Dict):
     stor.connect(conf)
 
     # handle incoming message
-    def handle_message_input(channel: str, raw: str):
-        data = json.loads(raw)
-
+    def handle_user_input(key: str, data: str):
+        user_input = UserInput.from_json(data)
         with stor.create_session() as session:
             msg = stor.add_message(
                 session,
-                user_id=data['user']['id'],
-                user_group=data['user']['group'],
-                user_display_name=data['user']['display_name'],
-                content=data['content'],
-                ts=data['ts'],
+                **user_input.__dict__,
             )
             print(f"input#{msg.id}: {msg.content}")
 
-    cach.consume_topic_forever(
-        [KEY_NL_INPUT_ASTERISK],
-        on_data=handle_message_input,
+    cach.consume_queue_forever(
+        [KEY_USER_INPUT],
+        on_data=handle_user_input,
+        clean_on_start=True,
     )
 
 
@@ -126,6 +122,9 @@ def process_ignite(conf: Dict):
             if not response:
                 return
 
+            # push to redis
+            cach.append_queue(KEY_SPEECH_SYNTHESIZER_INVOCATION, response)
+
             # save message
             msg = stor.add_message(
                 session,
@@ -136,9 +135,6 @@ def process_ignite(conf: Dict):
                 ts=int(time.time() * 1000),
             )
             print(f"saved output#{msg.id}")
-
-            # push to redis
-            cach.append_queue(KEY_SPEECH_SYNTHESIZER_INVOCATION, response)
 
     def execute() -> float | int | None:
         with stor.create_session() as session:
@@ -173,7 +169,10 @@ def process_ignite(conf: Dict):
 @click.option("--init-db", "-i", "opt_init_db", is_flag=True, help="initialize database")
 def main(opt_conf, opt_init_db):
     conf = load_config(opt_conf)
+
+    # try connect database
     stor.connect(conf, opt_init_db)
+    stor.disconnect()
 
     run_processes([
         (process_save_input, (conf,)),

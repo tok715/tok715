@@ -61,6 +61,14 @@ def connect(
     _state.ai_service = ai_service
 
 
+def disconnect():
+    pymilvus.connections.disconnect('default')
+    _state.ai_service = None
+    _state.collection_messages = None
+    _state.engine.dispose(close=True)
+    _state.engine = None
+
+
 def _define_collection_messages():
     # milvus
     collection = pymilvus.Collection(

@@ -21,5 +21,10 @@ def connect(conf: Dict):
     _state.redis_client = redis.Redis(**kwargs)
 
 
+def disconnect():
+    _state.redis_client.close()
+    _state.redis_client = None
+
+
 def redis_client() -> redis.Redis:
     return _state.redis_client

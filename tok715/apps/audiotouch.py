@@ -6,6 +6,8 @@ import click
 
 from tok715 import cach
 from tok715.misc import *
+from tok715.misc.nls import ensure_aliyun_nls_token
+from tok715.types import UserInput
 
 
 def decode_aliyun_nls_data(s: str) -> (str, int):
@@ -18,7 +20,7 @@ def decode_aliyun_nls_data(s: str) -> (str, int):
     return payload["result"], payload["index"]
 
 
-def process_in(conf: Dict, opt_device: str):
+def process_in(conf: Dict, nls_token: str, opt_device: str):
     cach.connect(conf)
 
     user_conf = conf["user"]
@@ -29,11 +31,14 @@ def process_in(conf: Dict, opt_device: str):
             return
         print(f"on_sentence_end: {content}")
 
-        cach.publish_nl_input(
-            user_id=user_conf['id'],
-            user_group=user_conf['group'],
-            user_display_name=user_conf['display_name'],
-            content=content,
+        cach.append_queue(
+            KEY_USER_INPUT,
+            UserInput(
+                content=content,
+                user_id=user_conf['id'],
+                user_group=user_conf['group'],
+                user_display_name=user_conf['display_name'],
+            ).to_json(),
         )
 
     def on_result_changed(s: str, *args):
@@ -45,7 +50,7 @@ def process_in(conf: Dict, opt_device: str):
     # start speech recognizer
     st = create_aliyun_nls_transcriber(
         conf,
-        cach.redis_client(),
+        nls_token,
         on_sentence_end=on_sentence_end,
         on_result_changed=on_result_changed,
     )
@@ -72,7 +77,7 @@ def process_in(conf: Dict, opt_device: str):
             time.sleep(0.001)
 
 
-def process_out(conf: Dict):
+def process_out(conf: Dict, nls_token: str):
     cach.connect(conf)
 
     audio_data = bytearray()
@@ -86,7 +91,7 @@ def process_out(conf: Dict):
 
     ss = create_aliyun_nls_synthesizer(
         conf,
-        cach.redis_client(),
+        nls_token,
         on_data=on_tts_data,
         on_completed=on_tts_completed,
     )
@@ -125,7 +130,11 @@ def main(opt_conf: str, opt_device: str):
 
     print(f'using audio input device: {opt_device}')
 
+    cach.connect(conf)
+    nls_token = ensure_aliyun_nls_token(conf, cach.redis_client())
+    cach.disconnect()
+
     run_processes([
-        (process_in, (conf, opt_device)),
-        (process_out, (conf,)),
+        (process_in, (conf, nls_token, opt_device)),
+        (process_out, (conf, nls_token)),
     ])

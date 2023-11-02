@@ -1,7 +1,8 @@
 import click
 
 from tok715 import cach
-from tok715.misc import load_config
+from tok715.misc import load_config, KEY_USER_INPUT
+from tok715.types import UserInput
 
 
 @click.command()
@@ -14,12 +15,17 @@ def main(opt_conf: str, input_text: str):
 
     user_conf = conf['user']
 
-    cach.publish_nl_input(
-        user_id=user_conf['id'],
-        user_group=user_conf['group'],
-        user_display_name=user_conf['display_name'],
-        content=input_text.strip(),
+    cach.append_queue(
+        KEY_USER_INPUT,
+        UserInput(
+            content=input_text.strip(),
+            user_id=user_conf['id'],
+            user_group=user_conf['group'],
+            user_display_name=user_conf['display_name'],
+        ).to_json(),
     )
+
+    cach.disconnect()
 
 
 if __name__ == "__main__":

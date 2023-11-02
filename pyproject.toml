@@ -26,6 +26,7 @@ redis = { extras = ["hiredis"], version = "^5.0.1" }
 oss2 = "^2.18.2"
 aliyun-python-sdk-core = ">=2.13.3"
 requests = "^2.31.0"
+setuptools = "^68.2.2"
 
 [tool.poetry.group.ai-service]
 optional = true

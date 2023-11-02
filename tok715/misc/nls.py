@@ -9,10 +9,13 @@ KEY_ALIYUN_NLS_TOKEN = "tok715:voicerecog:aliyun_nls_token"
 
 
 def ensure_aliyun_nls_token(
-        access_key_id: str,
-        access_key_secret: str,
+        conf: Dict,
         redis_client: redis.Redis,
 ) -> str:
+    conf_nls = conf['aliyun']['nls']
+    access_key_id = conf_nls['access_key_id'],
+    access_key_secret = conf_nls['access_key_secret'],
+
     aliyun_nls_token = redis_client.get(KEY_ALIYUN_NLS_TOKEN)
 
     if not aliyun_nls_token:
@@ -29,29 +32,21 @@ def ensure_aliyun_nls_token(
     return aliyun_nls_token
 
 
-def create_aliyun_nls_transcriber(conf: Dict, redis_client: redis.Redis, **kwargs) -> nls.NlsSpeechTranscriber:
+def create_aliyun_nls_transcriber(conf: Dict, token: str, **kwargs) -> nls.NlsSpeechTranscriber:
     conf_nls = conf['aliyun']['nls']
     return nls.NlsSpeechTranscriber(
         url=conf_nls['endpoint'],
-        token=ensure_aliyun_nls_token(
-            access_key_id=conf_nls['access_key_id'],
-            access_key_secret=conf_nls['access_key_secret'],
-            redis_client=redis_client,
-        ),
+        token=token,
         appkey=conf_nls['app_key'],
         **kwargs,
     )
 
 
-def create_aliyun_nls_synthesizer(conf: Dict, redis_client: redis.Redis, **kwargs) -> nls.NlsSpeechSynthesizer:
+def create_aliyun_nls_synthesizer(conf: Dict, token: str, **kwargs) -> nls.NlsSpeechSynthesizer:
     conf_nls = conf['aliyun']['nls']
     return nls.NlsSpeechSynthesizer(
         url=conf_nls['endpoint'],
-        token=ensure_aliyun_nls_token(
-            access_key_id=conf_nls['access_key_id'],
-            access_key_secret=conf_nls['access_key_secret'],
-            redis_client=redis_client,
-        ),
+        token=token,
         appkey=conf_nls['app_key'],
         **kwargs,
     )
