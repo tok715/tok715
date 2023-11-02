@@ -8,8 +8,7 @@
 flowchart TB
     node_mic(用户: 麦克风)
     node_speaker(用户: 扬声器)
-    node_voicerecog_main("模块: tok715-voicerecog")
-    node_speechloud_main("模块: tok715-speechloud")
+    node_audioinout_main("模块: tok715-audioinout")
     node_catchqueue_main("模块: tok715-catchqueue")
     node_vectorhero_main("模块: tok715-vectorhero")
     node_ai_service_main("模块: tok715-ai-service")
@@ -22,8 +21,8 @@ flowchart TB
     node_redis_queue_output(Redis 队列: 模型输出)
     node_mysql_messages(MySQL 数据库)
     node_milvus_messages(Milvus 向量数据库)
-    node_mic --> node_voicerecog_main <--> node_aliyun_nls
-    node_voicerecog_main --> node_redis_queue_input
+    node_mic --> node_audioinout_main <--> node_aliyun_nls
+    node_audioinout_main --> node_redis_queue_input
     node_redis_queue_input --> node_catchqueue_main -- 原始数据 --> node_mysql_messages
     node_catchqueue_main <-- 向量化 --> node_ai_service_main
     node_catchqueue_main -- 向量数据 --> node_milvus_messages
@@ -33,9 +32,9 @@ flowchart TB
     node_milvus_messages -- 向量数据 --> node_mindignite_main
     node_mysql_messages -- 原始数据 --> node_mindignite_main
     node_mindignite_main <-- 推理 --> node_ai_service_main
-    node_mindignite_main --> node_redis_queue_output --> node_speechloud_main
-    node_speechloud_main <--> node_aliyun_tts
-    node_speechloud_main --> node_speaker
+    node_mindignite_main --> node_redis_queue_output --> node_audioinout_main
+    node_audioinout_main <--> node_aliyun_tts
+    node_audioinout_main --> node_speaker
     node_bilibili_stream --> node_danmucolle_main --> node_redis_queue_input
 ```
 
@@ -48,13 +47,18 @@ flowchart TB
 
 ## 3. 模块
 
-### 3.1 语音识别模块: `voicerecog`
+### 3.1 音频交互模块: `audioinout`
 
-* 使用 `ffmpeg` 捕捉麦克风数据流
-* 传输数据流到阿里云语音识别服务
-* 使用 `redis` 发布识别结果到 `自然语言输入` 主题
+* 输入
+    * 使用 `ffmpeg` 捕捉麦克风数据流
+    * 传输数据流到阿里云语音识别服务
+    * 使用 `redis` 发布识别结果到 `自然语言输入` 主题
+* 输出
+  * 使用 `redis` 订阅 `模型输出` 主题
+  * 适用 阿里云语音合成服务 将输出结果转换为语音
+  * 使用 `ffplay` 播放语音合成结果
 
-**编码格式**
+**输入编码格式**
 
 阿里云语音识别服务要求编码格式为 `pcm_s16le, 16khz, mono`
 
@@ -141,9 +145,7 @@ POST /invoke
 
 ### 3.5 思维触发模块: `mindignite`
 
-### 3.6 语音合成模块: `speechloud`
-
-### 3.7 弹幕收集模块: `danmucolle`
+### 3.6 弹幕收集模块: `danmucolle`
 
 ## 4. Redis PUB/SUB 队列
 
@@ -169,7 +171,7 @@ POST /invoke
 # tok715.yml
 
 # 用户身份
-# 使用模块：voicerecog
+# 使用模块：audioinout
 user:
   id: owner
   display_name: 主人
@@ -177,7 +179,7 @@ user:
 
 # redis 配置
 # 更多参数，翻阅 https://redis-py.readthedocs.io/en/stable/connections.html
-# 使用模块: voicerecog
+# 使用模块: audioinout
 redis:
   host: '127.0.0.1'
   port: 6379
@@ -197,7 +199,7 @@ milvus:
   port: '19530'
 
 # 阿里云 服务配置
-# 使用模块: voicerecog
+# 使用模块: audioinout
 aliyun:
   # 阿里云语音识别
   nls:
