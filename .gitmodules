@@ -1,0 +1,6 @@
+[submodule "3rdparty/qwen"]
+	path = 3rdparty/qwen
+	url = https://github.com/QwenLM/Qwen.git
+[submodule "3rdparty/flash-attention"]
+	path = 3rdparty/flash-attention
+	url = https://github.com/Dao-AILab/flash-attention.git
