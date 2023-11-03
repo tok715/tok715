@@ -1,8 +1,9 @@
 from typing import List, Tuple
 
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from peft import AutoPeftModelForCausalLM
+from transformers import AutoTokenizer
 
-from .constants import MODEL_GENERATION
+MODEL_GENERATION = "train_output"
 
 
 class ChatExecutor:
@@ -13,7 +14,7 @@ class ChatExecutor:
             local_files_only=True,
         )
 
-        model = AutoModelForCausalLM.from_pretrained(
+        model = AutoPeftModelForCausalLM.from_pretrained(
             MODEL_GENERATION,
             device_map="cuda",
             trust_remote_code=True,

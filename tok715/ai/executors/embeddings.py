@@ -2,7 +2,7 @@ from typing import List
 
 from sentence_transformers import SentenceTransformer
 
-from .constants import MODEL_EMBEDDINGS
+MODEL_EMBEDDINGS = "intfloat/multilingual-e5-large"
 
 
 class EmbeddingsExecutor:

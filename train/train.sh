@@ -4,10 +4,15 @@ set -eu
 
 cd "$(dirname "${0}")"
 
-MODEL="Qwen/Qwen-14B-Chat-Int4"
+MODEL="Qwen/Qwen-7B-Chat-Int4"
 
 DIR_QWEN="../3rdparty/qwen"
 DIR_DATA="../data"
+
+PATH_TRAIN_DATA="${DIR_DATA}/train_data.json"
+PATH_TRAIN_OUTPUT="${DIR_DATA}/train_output"
+
+python3 prepare.py --input data.txt --output "${PATH_TRAIN_DATA}"
 
 export CUDA_DEVICE_MAX_CONNECTIONS=1
 export CUDA_VISIBLE_DEVICES=0
@@ -15,9 +20,9 @@ export CUDA_VISIBLE_DEVICES=0
 # Remember to use --fp16 instead of --bf16 due to autogptq
 python "${DIR_QWEN}/finetune.py" \
   --model_name_or_path "${DIR_DATA}/${MODEL}" \
-  --data_path "${DIR_DATA}/train_data.json" \
+  --data_path "${PATH_TRAIN_DATA}" \
   --fp16 True \
-  --output_dir "${DIR_DATA}/train_output" \
+  --output_dir "${PATH_TRAIN_OUTPUT}" \
   --num_train_epochs 5 \
   --per_device_train_batch_size 2 \
   --per_device_eval_batch_size 1 \

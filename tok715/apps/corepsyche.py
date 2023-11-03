@@ -7,10 +7,11 @@ from sqlalchemy.orm import Session
 
 from tok715 import stor, cach
 from tok715.ai.client import create_ai_service_client
-from tok715.ai.tunning import system_history, system_prompt
 from tok715.misc import *
 from tok715.stor import Message
 from tok715.types import UserInput
+
+DEFAULT_SYSTEM = "You are a helpful assistant."
 
 
 def process_save_input(conf: Dict):
@@ -103,7 +104,7 @@ def process_ignite(conf: Dict):
         if not query:
             return None
 
-        return {'query': query, 'history': system_history() + history, 'system': system_prompt()}
+        return {'query': query, 'history': history, 'system': DEFAULT_SYSTEM}
 
     def on_triggered():
         with stor.create_session() as session:
